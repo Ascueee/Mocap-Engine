@@ -1,7 +1,7 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-namespace _2DGame.GameFiles.Shaders;
+namespace Galaxy3D;
 
 public class Shader
 {

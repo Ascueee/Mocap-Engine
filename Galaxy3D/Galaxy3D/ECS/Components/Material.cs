@@ -1,5 +1,5 @@
 
-using _2DGame.GameFiles.Shaders;
+using Galaxy3D;
 using Galaxy3D.Assets;
 using OpenTK.Mathematics;
 using Galaxy3D.ECS.Components;

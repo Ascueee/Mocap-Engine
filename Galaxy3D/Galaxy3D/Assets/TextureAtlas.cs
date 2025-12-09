@@ -33,77 +33,31 @@ public class TextureAtlas : Texture
         base.Use(textureUnit);
     }
 
-    //Updates a meshes data with new texture data
-    //Needs to itterate past the first three floats of the mesh data because thats vertex data
-    //Then needs to take the UVS which are the 4th and 5th element of the vertex
-    //BUT need to add a way to make sure that I dont change Normals or other vertex data later so itterate after that
-    public float[] UpdateMeshUVs(int textureID, float[] modelMesh)
+    //Updates a meshes data with new texture data 
+    //It First: Gets the texture height and width
+    //Then it uses the texture id which represents the textures place in the coordinate
+    //then itterates through the modelUVs and updates them to match with the texture
+    public float[] UpdateMeshUVs(int textureID, float[] modelUVs)
     {
-        //RN ONLY WORKS FOR CUBE NEED TO CHANGE TO ALLOW FOR THE MESH RENDER TO HOLD VERTEX AND MESH DATA SEPERATLY
-        //when I get the uvs now update them in the array
-        //Uvs need to represent the texture in texture coordinate space and normalized
-        //need to retrieve the first two normalized texture coordinates
-        //then need for the second two vertices need to  add with the _textureSize to on the X to get the x value of
-        //the second set of vertices and the Ys are either 0 or the _textureSize in my system.
-        //Works for square uvs needs to set specifically for each shape
-            
-        //This would be the first value for the normalized UVS
-        var u = (textureID * _textureSize) / _textureResolution.X;
-        var v = 0 / _textureResolution.Y;
-            
-        var u1 = (u + _textureSize) / _textureResolution.X;
-        var v1 = (_textureSize) / _textureResolution.Y;
-        return new float[]
+        float[] updatedUVs = new float[modelUVs.Length];
+
+        
+        float tileW = _textureSize / _textureResolution.X;
+        float tileH = _textureSize / _textureResolution.Y;
+        
+        float uOffset = (textureID * _textureSize) / _textureResolution.X;
+        float vOffset = (_textureSize) / _textureResolution.Y;
+
+        for (int i = 0; i < modelUVs.Length; i += 2)
         {
-            //Vertex data layout: First three vertex data, then the next two are UVs
-            // Back face
-            -0.5f, -0.5f, -0.5f, u, v,
-            0.5f, -0.5f, -0.5f, u1, v,
-            0.5f,  0.5f, -0.5f, u1, v1,
-            0.5f,  0.5f, -0.5f, u1, v1,
-            -0.5f,  0.5f, -0.5f, u, v1,
-            -0.5f, -0.5f, -0.5f, u, v,
+            float modelU = modelUVs[i];
+            float modelV = modelUVs[i + 1];
+            
+            updatedUVs[i]     = uOffset + modelU * tileW;
+            updatedUVs[i + 1] = vOffset + modelV * tileH;
+        }
 
-            // Front face
-            -0.5f, -0.5f,  0.5f, u, v,
-            0.5f, -0.5f,  0.5f, u1, v,
-            0.5f,  0.5f,  0.5f, u1, v1,
-            0.5f,  0.5f,  0.5f, u1, v1,
-            -0.5f,  0.5f,  0.5f, u, v1,
-            -0.5f, -0.5f,  0.5f, u, v,
-
-            // Left face
-            -0.5f,  0.5f,  0.5f, u1, v1,
-            -0.5f,  0.5f, -0.5f, u, v1,
-            -0.5f, -0.5f, -0.5f, u, v,
-            -0.5f, -0.5f, -0.5f, u, v,
-            -0.5f, -0.5f,  0.5f, u1, v,
-            -0.5f,  0.5f,  0.5f, u1, v1,
-
-            // Right face
-            0.5f,  0.5f,  0.5f, u1, v1,
-            0.5f,  0.5f, -0.5f, u, v1,
-            0.5f, -0.5f, -0.5f, u, v,
-            0.5f, -0.5f, -0.5f, u, v,
-            0.5f, -0.5f,  0.5f, u1, v,
-            0.5f,  0.5f,  0.5f, u1, v1,
-
-            // Bottom face
-            -0.5f, -0.5f, -0.5f, u, v1,
-            0.5f, -0.5f, -0.5f, u1, v1,
-            0.5f, -0.5f,  0.5f, u1, v,
-            0.5f, -0.5f,  0.5f, u1, v,
-            -0.5f, -0.5f,  0.5f, u, v,
-            -0.5f, -0.5f, -0.5f, u, v1,
-
-            // Top face
-            -0.5f,  0.5f, -0.5f, u, v1,
-            0.5f,  0.5f, -0.5f, u1, v1,
-            0.5f,  0.5f,  0.5f, u1, v,
-            0.5f,  0.5f,  0.5f, u1, v,
-            -0.5f,  0.5f,  0.5f, u, v,
-            -0.5f,  0.5f, -0.5f, u, v1,
-        };
+        return updatedUVs;
     }
     
 }

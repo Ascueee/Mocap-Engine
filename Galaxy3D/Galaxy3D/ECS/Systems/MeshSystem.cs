@@ -36,24 +36,27 @@ public class MeshSystem : ISystem
             //Load the shader
             entityMat.shader.Load(); 
             entityMat.texture.Load();
-
             if (entityMat.texture is TextureAtlas)
             {
                 TextureAtlas atlas;
                 atlas = (TextureAtlas)entityMat.texture;
-                entityMesh.meshData = atlas.UpdateMeshUVs(0, entityMesh.meshData);
+                entityMesh.uvData = atlas.UpdateMeshUVs(0, entityMesh.uvData);
+                
             }
+            
+            entityMesh.renderMeshData = CombineMeshData(entityMesh.meshData, entityMesh.uvData);
             
             entityMesh.vao = GL.GenVertexArray();
             GL.BindVertexArray(entityMesh.vao);
-
+            
             entityMesh.vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, entityMesh.vbo);
             GL.BufferData(
-                BufferTarget.ArrayBuffer, entityMesh.meshData.Length * sizeof(float),
-                entityMesh.meshData,
+                BufferTarget.ArrayBuffer, entityMesh.renderMeshData.Length * sizeof(float),
+                entityMesh.renderMeshData,
                 BufferUsageHint.StaticDraw
             );
+
 
             //Now giving context to the vertex data
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float,
@@ -89,8 +92,38 @@ public class MeshSystem : ISystem
             entityMat.shader.SetMat4("model", model);
             entityMat.shader.SetMat4("view", view);
             entityMat.shader.SetMat4("projection", projection);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, entityMesh.meshData.Length / 5);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, entityMesh.renderMeshData.Length / 5);
         }
+    }
+
+
+    //Combines the vertex and uv data together in the future will add normals and etc
+    public float[] CombineMeshData(float[] vertexData, float[] uvData)
+    {
+        float[] combinedMesh = new float[vertexData.Length + uvData.Length];
+        
+        int indexCounterMesh = 0;
+        int indexCounterVertex = 0;
+        int indexCounterUV = 0;
+        
+        for (int i = 0; i < (combinedMesh.Length / 5); i++)
+        {
+
+            //these make up the vertices
+            combinedMesh[indexCounterMesh] = vertexData[indexCounterVertex];
+            combinedMesh[indexCounterMesh + 1] = vertexData[indexCounterVertex + 1];
+            combinedMesh[indexCounterMesh + 2] = vertexData[indexCounterVertex + 2];
+            
+            //texture uvs
+            combinedMesh[indexCounterMesh + 3] = uvData[indexCounterUV];
+            combinedMesh[indexCounterMesh + 4] = uvData[indexCounterUV + 1];
+            
+            indexCounterMesh += 5;
+            indexCounterVertex += 3;
+            indexCounterUV += 2;
+        }
+        
+        return combinedMesh;
     }
 
     public void AddEntityToSystem(Entity e)

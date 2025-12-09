@@ -1,4 +1,3 @@
-using _2DGame.GameFiles.Shaders;
 using Galaxy3D;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
@@ -7,10 +6,10 @@ using OpenTK.Windowing.Desktop;
 using Soul.ECS.Components;
 using Galaxy3D.Assets;
 using Galaxy3D.ECS.Components;
+using Galaxy3D.EngineSpecific;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using RenderEye.EngineSpecific;
 
-namespace RenderEye;
+namespace Galaxy3D;
 /// <summary>
 /// GENERAL NOTES TO SELF:
 ///     COMPONENTS ARE STRUCTS MAKE SURE TO RESET THEIR COMPONENTS USING THE SETCOMPONENT METHOD
@@ -33,7 +32,7 @@ public class Galaxy3D : GameWindow
         0.5f,  0.5f, -0.5f, 1f, 1f,
         -0.5f,  0.5f, -0.5f, 0f, 1f,
         -0.5f, -0.5f, -0.5f, 0f, 0f,
-
+    
         // Front face
         -0.5f, -0.5f,  0.5f, 0f, 0f,
         0.5f, -0.5f,  0.5f, 1f, 0f,
@@ -41,7 +40,7 @@ public class Galaxy3D : GameWindow
         0.5f,  0.5f,  0.5f, 1f, 1f,
         -0.5f,  0.5f,  0.5f, 0f, 1f,
         -0.5f, -0.5f,  0.5f, 0f, 0f,
-
+    
         // Left face
         -0.5f,  0.5f,  0.5f, 1f, 1f,
         -0.5f,  0.5f, -0.5f, 0f, 1f,
@@ -49,7 +48,7 @@ public class Galaxy3D : GameWindow
         -0.5f, -0.5f, -0.5f, 0f, 0f,
         -0.5f, -0.5f,  0.5f, 1f, 0f,
         -0.5f,  0.5f,  0.5f, 1f, 1f,
-
+    
         // Right face
         0.5f,  0.5f,  0.5f, 1f, 1f,
         0.5f,  0.5f, -0.5f, 0f, 1f,
@@ -57,7 +56,7 @@ public class Galaxy3D : GameWindow
         0.5f, -0.5f, -0.5f, 0f, 0f,
         0.5f, -0.5f,  0.5f, 1f, 0f,
         0.5f,  0.5f,  0.5f, 1f, 1f,
-
+    
         // Bottom face
         -0.5f, -0.5f, -0.5f, 0f, 1f,
         0.5f, -0.5f, -0.5f, 1f, 1f,
@@ -65,7 +64,7 @@ public class Galaxy3D : GameWindow
         0.5f, -0.5f,  0.5f, 1f, 0f,
         -0.5f, -0.5f,  0.5f, 0f, 0f,
         -0.5f, -0.5f, -0.5f, 0f, 1f,
-
+    
         // Top face
         -0.5f,  0.5f, -0.5f, 0f, 1f,
         0.5f,  0.5f, -0.5f, 1f, 1f,
@@ -81,27 +80,17 @@ public class Galaxy3D : GameWindow
         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right vertex
         0.0f,  0.5f, 0.0f, 0.5f, 1.0f  // Top vertex
     });
-    
-    Mesh squareMesh = new Mesh(new float[]
-    {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f, 
-        0.5f,  0.5f, 0.0f, 
-        
-        0.5f,  0.5f, 0.0f, 
-        -0.5f,  0.5f, 0.0f, 
-        -0.5f, -0.5f, 0.0f  
-    });
+
     
     Shader testShader = new Shader(
-        "/Users/hayyan/Desktop/projects/GameEngines/RenderEyeEngine/RenderEye/Galaxy3D/Assets/Shaders/Base.vert",
-        "/Users/hayyan/Desktop/projects/GameEngines/RenderEyeEngine/RenderEye/Galaxy3D/Assets/Shaders/Base.frag");
+        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/Base.vert",
+        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/Base.frag");
 
     private Texture testTexture = new Texture(
-        "/Users/hayyan/Desktop/projects/GameEngines/RenderEyeEngine/RenderEye/Galaxy3D/Assets/Textures/container2.png");
+        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Textures/container2.png");
 
     private TextureAtlas atlas = new TextureAtlas(
-        "/Users/hayyan/Desktop/projects/GameEngines/RenderEyeEngine/RenderEye/Galaxy3D/Assets/Textures/container2.png",
+        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Textures/container2.png",
         500,
         new Vector2(500,500)
         );
@@ -122,9 +111,9 @@ public class Galaxy3D : GameWindow
         _world.GetEntity(0).AddComponent(new Material(
             testShader, 
             atlas, 
-            new Vector4(1.0f, 0.6f, 0.6f, 1.0f))
+            new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
         );
-        _world.GetEntity(0).AddComponent(new MeshRenderer(triangleMesh));
+        _world.GetEntity(0).AddComponent(new MeshRenderer(cubeMesh));
         
         _world.CreateEntity("World Generator");
         _world.GetEntity(1).AddComponent(new VoxelWorld<Voxel>(

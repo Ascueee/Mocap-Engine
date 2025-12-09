@@ -1,4 +1,4 @@
-using RenderEye.EngineSpecific; 
+using Galaxy3D.EngineSpecific; 
 namespace Galaxy3D.ECS.Components;
 
 public struct VoxelWorld<T> : IComponent where T : Voxel, new()

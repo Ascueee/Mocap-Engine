@@ -1,6 +1,6 @@
 using Galaxy3D.Assets;
 
-namespace RenderEye.EngineSpecific;
+namespace Galaxy3D.EngineSpecific;
 
 /// <summary>
 /// Constructor takes in the size of the chunk its one int because the chunks are square so 5x5x5

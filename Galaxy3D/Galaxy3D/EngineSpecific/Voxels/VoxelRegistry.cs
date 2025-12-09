@@ -1,4 +1,4 @@
-namespace RenderEye.EngineSpecific;
+namespace Galaxy3D.EngineSpecific;
 
 /// <summary>
 /// This will hold a list of registed voxels
