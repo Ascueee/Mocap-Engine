@@ -1,15 +1,26 @@
 namespace Galaxy3D.Assets;
 public struct Mesh
 {
-    private const int _engineDataLength = 5; //represents the amount of data one Vertex has(vertex, uvs, normals, etc)
+    const int _engineDataLength = 5; //represents the amount of data one Vertex has(vertex, uvs, normals, etc)
     float[] _vertices;
-    private float[] _uvs;
+    float[] _uvs;
+    uint[] _indices;
 
     public Mesh(float[] meshData)
     {
         //initializes the arrays and sets their sizes
         _vertices = new float[(meshData.Length / _engineDataLength) * 3];
         _uvs = new float[(meshData.Length / _engineDataLength) * 2];
+        
+        GenerateMeshData(meshData);
+    }
+    
+    public Mesh(float[] meshData, uint[] indices)
+    {
+        //initializes the arrays and sets their sizes
+        _vertices = new float[(meshData.Length / _engineDataLength) * 3];
+        _uvs = new float[(meshData.Length / _engineDataLength) * 2];
+        _indices = indices;
         
         GenerateMeshData(meshData);
     }
@@ -40,5 +51,6 @@ public struct Mesh
     
     public float[] vertices { get => _vertices; set => _vertices = value; }
     public float[] uvs { get => _uvs; set => _uvs = value; }
+    public uint[] indices { get => _indices; set => _indices = value; }
 
 }

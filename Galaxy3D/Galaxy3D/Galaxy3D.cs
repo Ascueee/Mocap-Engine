@@ -81,6 +81,18 @@ public class Galaxy3D : GameWindow
         0.0f,  0.5f, 0.0f, 0.5f, 1.0f  // Top vertex
     });
 
+    private Mesh squareMesh = new Mesh(new float[]
+    {
+        0.5f,  0.5f, 0.0f, 1.0f, 1.0f,  // top right
+        0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,  // bottom left
+        -0.5f,  0.5f, 0.0f, 0.0f, 1.0f  // top left 
+    }, new uint[]
+    {
+        0, 1, 3, //first triangle
+        1, 2, 3 //second to make the square
+    });
+
     
     Shader testShader = new Shader(
         "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/Base.vert",
@@ -113,7 +125,8 @@ public class Galaxy3D : GameWindow
             atlas, 
             new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
         );
-        _world.GetEntity(0).AddComponent(new MeshRenderer(cubeMesh));
+        _world.GetEntity(0).AddComponent(new Transform());
+        _world.GetEntity(0).AddComponent(new MeshRenderer(squareMesh));
         
         _world.CreateEntity("World Generator");
         _world.GetEntity(1).AddComponent(new VoxelWorld<Voxel>(

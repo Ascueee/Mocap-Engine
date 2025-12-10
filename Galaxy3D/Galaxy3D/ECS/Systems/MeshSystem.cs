@@ -1,5 +1,6 @@
 using Galaxy3D.Assets;
 using Galaxy3D.ECS;
+using Galaxy3D.ECS.Components;
 using Galaxy3D.ECS.Systems.ComponentSystems;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
@@ -8,7 +9,7 @@ using Soul.ECS.Components;
 namespace Galaxy3D;
 
 /// <summary>
-///     Handles the logic behind the mesh renderer
+/// Handles the logic behind the mesh renderer
 /// </summary>
 public class MeshSystem : ISystem
 {
@@ -24,7 +25,6 @@ public class MeshSystem : ISystem
 
     //This is where all the data is loaded for rendering
     //Set up VAOs, and VBOS for each of the entities
-
     public void LoadSystem()
     {
         for (var i = 0; i < currentSystemAmount; i++)
@@ -32,6 +32,7 @@ public class MeshSystem : ISystem
             Console.WriteLine(_entityMeshes[i].entityName);
             Material entityMat = _entityMeshes[i].GetComponent<Material>();
             MeshRenderer entityMesh = _entityMeshes[i].GetComponent<MeshRenderer>();
+
 
             //Load the shader
             entityMat.shader.Load(); 
@@ -52,12 +53,21 @@ public class MeshSystem : ISystem
             entityMesh.vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, entityMesh.vbo);
             GL.BufferData(
-                BufferTarget.ArrayBuffer, entityMesh.renderMeshData.Length * sizeof(float),
+                BufferTarget.ArrayBuffer,
+                entityMesh.renderMeshData.Length * sizeof(float),
                 entityMesh.renderMeshData,
                 BufferUsageHint.StaticDraw
             );
-
-
+            
+            entityMesh.ebo = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, entityMesh.ebo);
+            GL.BufferData(
+                BufferTarget.ElementArrayBuffer,
+                entityMesh.indices.Length * sizeof(uint),
+                entityMesh.indices,
+                BufferUsageHint.StaticDraw
+                );
+            
             //Now giving context to the vertex data
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float,
                 false, 5 * sizeof(float), 0);
@@ -73,15 +83,15 @@ public class MeshSystem : ISystem
     //Draw the mesh and update system logic for each rendering
     public void UpdateSystem()
     {
-        
         for (var i = 0; i < currentSystemAmount; i++)
         {
             Material entityMat = _entityMeshes[i].GetComponent<Material>();
             MeshRenderer entityMesh = _entityMeshes[i].GetComponent<MeshRenderer>();
+            Transform entityTransform = _entityMeshes[i].GetComponent<Transform>();
 
-            Matrix4 model = Matrix4.CreateRotationX(45f);
+            Matrix4 model = entityTransform.modelMatrix;
             Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -3.0f);
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f),
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90f),
                 800f / 600f, 0.1f, 100.0f);
 
             entityMat.texture.Use(TextureUnit.Texture0);
@@ -92,7 +102,9 @@ public class MeshSystem : ISystem
             entityMat.shader.SetMat4("model", model);
             entityMat.shader.SetMat4("view", view);
             entityMat.shader.SetMat4("projection", projection);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, entityMesh.renderMeshData.Length / 5);
+            
+            GL.DrawElements(PrimitiveType.Triangles, entityMesh.indices.Length,
+                DrawElementsType.UnsignedInt, 0);
         }
     }
 
