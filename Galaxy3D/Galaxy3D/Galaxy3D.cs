@@ -5,6 +5,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using Soul.ECS.Components;
 using Galaxy3D.Assets;
+using Galaxy3D.Assets.Models;
 using Galaxy3D.ECS.Components;
 using Galaxy3D.EngineSpecific;
 using OpenTK.Windowing.GraphicsLibraryFramework;
@@ -24,54 +25,44 @@ public class Galaxy3D : GameWindow
     Mesh cubeMesh = new Mesh(
         new float[]
     {
-        //Vertex data layout: First three vertex data, then the next two are UVs
-        // Back face
         -0.5f, -0.5f, -0.5f, 0f, 0f,
         0.5f, -0.5f, -0.5f, 1f, 0f,
         0.5f,  0.5f, -0.5f, 1f, 1f,
-        0.5f,  0.5f, -0.5f, 1f, 1f,
         -0.5f,  0.5f, -0.5f, 0f, 1f,
-        -0.5f, -0.5f, -0.5f, 0f, 0f,
-    
-        // Front face
-        -0.5f, -0.5f,  0.5f, 0f, 0f,
-        0.5f, -0.5f,  0.5f, 1f, 0f,
-        0.5f,  0.5f,  0.5f, 1f, 1f,
-        0.5f,  0.5f,  0.5f, 1f, 1f,
-        -0.5f,  0.5f,  0.5f, 0f, 1f,
-        -0.5f, -0.5f,  0.5f, 0f, 0f,
-    
-        // Left face
-        -0.5f,  0.5f,  0.5f, 1f, 1f,
-        -0.5f,  0.5f, -0.5f, 0f, 1f,
-        -0.5f, -0.5f, -0.5f, 0f, 0f,
+        
+        -0.5f, -0.5f, 0.5f, 0f, 0f,
+        0.5f, -0.5f, 0.5f, 1f, 0f,
+        0.5f,  0.5f, 0.5f, 1f, 1f,
+        -0.5f,  0.5f, 0.5f, 0f, 1f,
+
         -0.5f, -0.5f, -0.5f, 0f, 0f,
         -0.5f, -0.5f,  0.5f, 1f, 0f,
         -0.5f,  0.5f,  0.5f, 1f, 1f,
-    
-        // Right face
+        -0.5f,  0.5f, -0.5f, 0f, 1f,
+        
+        0.5f, -0.5f, -0.5f, 0f, 0f,
+        0.5f, -0.5f,  0.5f, 1f, 0f,
         0.5f,  0.5f,  0.5f, 1f, 1f,
         0.5f,  0.5f, -0.5f, 0f, 1f,
-        0.5f, -0.5f, -0.5f, 0f, 0f,
-        0.5f, -0.5f, -0.5f, 0f, 0f,
-        0.5f, -0.5f,  0.5f, 1f, 0f,
+        
+        -0.5f, -0.5f, -0.5f, 0f, 0f,
+        0.5f, -0.5f, -0.5f, 1f, 0f,
+        0.5f, -0.5f,  0.5f, 1f, 1f,
+        -0.5f, -0.5f,  0.5f, 0f, 1f,
+
+        -0.5f,  0.5f, -0.5f, 0f, 0f,
+        0.5f,  0.5f, -0.5f, 1f, 0f,
         0.5f,  0.5f,  0.5f, 1f, 1f,
-    
-        // Bottom face
-        -0.5f, -0.5f, -0.5f, 0f, 1f,
-        0.5f, -0.5f, -0.5f, 1f, 1f,
-        0.5f, -0.5f,  0.5f, 1f, 0f,
-        0.5f, -0.5f,  0.5f, 1f, 0f,
-        -0.5f, -0.5f,  0.5f, 0f, 0f,
-        -0.5f, -0.5f, -0.5f, 0f, 1f,
-    
-        // Top face
-        -0.5f,  0.5f, -0.5f, 0f, 1f,
-        0.5f,  0.5f, -0.5f, 1f, 1f,
-        0.5f,  0.5f,  0.5f, 1f, 0f,
-        0.5f,  0.5f,  0.5f, 1f, 0f,
-        -0.5f,  0.5f,  0.5f, 0f, 0f,
-        -0.5f,  0.5f, -0.5f, 0f, 1f,
+        -0.5f,  0.5f,  0.5f, 0f, 1f,
+    }, new uint[]
+        {
+            0,1,2, 2,3,0,       // Back
+            4,5,6, 6,7,4,       // Front
+            8,9,10, 10,11,8,    // Left
+            12,13,14, 14,15,12, // Right
+            16,17,18, 18,19,16, // Bottom
+            20,21,22, 22,23,20  // Top
+
         });
     
     Mesh triangleMesh = new Mesh(new float[]
@@ -79,6 +70,9 @@ public class Galaxy3D : GameWindow
         -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // Bottom-left vertex
         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Bottom-right vertex
         0.0f,  0.5f, 0.0f, 0.5f, 1.0f  // Top vertex
+    }, new uint[]
+    {
+        0,1,2
     });
 
     private Mesh squareMesh = new Mesh(new float[]
@@ -106,6 +100,10 @@ public class Galaxy3D : GameWindow
         500,
         new Vector2(500,500)
         );
+
+    private Model modelTest = new Model(
+        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/bunny.obj",
+        _world);
         
     public Galaxy3D(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings()
     {
@@ -116,25 +114,22 @@ public class Galaxy3D : GameWindow
 
     protected override void OnLoad()
     {
-        VoxelRegistry<Voxel> _voxelRegistry = new VoxelRegistry<Voxel>();
-        _voxelRegistry.RegisterVoxel(0, new Voxel()); //registers a basic voxel with only a id
-        
-        _world.CreateEntity("Cube"); 
         _world.GetEntity(0).AddComponent(new Material(
             testShader, 
             atlas, 
             new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
         );
         _world.GetEntity(0).AddComponent(new Transform());
-        _world.GetEntity(0).AddComponent(new MeshRenderer(squareMesh));
         
-        _world.CreateEntity("World Generator");
-        _world.GetEntity(1).AddComponent(new VoxelWorld<Voxel>(
-            1,
-            16,
-            16,
-            new VoxelRegistry<Voxel>())
-        );
+        // _world.CreateEntity("Cube"); 
+        // _world.GetEntity(1).AddComponent(new Material(
+        //     testShader, 
+        //     atlas, 
+        //     new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
+        // );
+        // _world.GetEntity(1).AddComponent(new Transform());
+        // _world.GetEntity(1).AddComponent(new MeshRenderer(cubeMesh));
+        
         
         //load the ecs and get it ready
         _world.PopulateSystems();
@@ -146,6 +141,9 @@ public class Galaxy3D : GameWindow
     {
         GL.Enable(EnableCap.DepthTest);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        // Transform cubeTransform = _world.GetEntity(1).GetComponent<Transform>();
+        // cubeTransform.rotation += new Vector3(0.5f * (float)e.Time, 1f * (float)e.Time, 2f * (float)e.Time);
+        // _world.GetEntity(1).SetComponent(cubeTransform);
         _world.UseSystems();
         
         SwapBuffers();

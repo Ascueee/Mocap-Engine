@@ -1,3 +1,5 @@
+using Galaxy3D.Assets.Models;
+
 namespace Galaxy3D.Assets;
 public struct Mesh
 {
@@ -23,6 +25,14 @@ public struct Mesh
         _indices = indices;
         
         GenerateMeshData(meshData);
+    }
+
+    //Load a mesh for a model file
+    public Mesh(float[] vertices, float[] uvs, uint[] indices)
+    {
+        _vertices = vertices;
+        _uvs = uvs;
+        _indices = indices;
     }
 
 

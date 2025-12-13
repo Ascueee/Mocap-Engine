@@ -5,7 +5,6 @@ using Galaxy3D.ECS.Systems.ComponentSystems;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using Soul.ECS.Components;
-
 namespace Galaxy3D;
 
 /// <summary>
@@ -89,7 +88,7 @@ public class MeshSystem : ISystem
             MeshRenderer entityMesh = _entityMeshes[i].GetComponent<MeshRenderer>();
             Transform entityTransform = _entityMeshes[i].GetComponent<Transform>();
 
-            Matrix4 model = entityTransform.modelMatrix;
+            Matrix4 model = UpdateModelMatrix(entityTransform.position, entityTransform.rotation, entityTransform.scale);
             Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -3.0f);
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90f),
                 800f / 600f, 0.1f, 100.0f);
@@ -106,6 +105,20 @@ public class MeshSystem : ISystem
             GL.DrawElements(PrimitiveType.Triangles, entityMesh.indices.Length,
                 DrawElementsType.UnsignedInt, 0);
         }
+    }
+
+    public Matrix4 UpdateModelMatrix(Vector3 position, Vector3 rotation, Vector3 scale)
+    {
+        Vector3 _position = position;
+        Vector3 _rotation = rotation;
+        Vector3 _scale = scale;
+        
+        Matrix4 _rotationMatrix = Matrix4.CreateRotationX(_rotation.X) * 
+                          Matrix4.CreateRotationY(_rotation.Y) * 
+                          Matrix4.CreateRotationZ(_rotation.Z);
+        
+
+        return Matrix4.CreateTranslation(_position) * _rotationMatrix * Matrix4.CreateScale(_scale);
     }
 
 

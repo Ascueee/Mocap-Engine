@@ -17,7 +17,6 @@ public class ECSWorld
     IdGenerator _entityIdGenerator = new IdGenerator(MAX_ENTITIES);
     Entity[] _entities = new Entity[MAX_ENTITIES];
     MeshSystem _meshSystem = new MeshSystem(MAX_ENTITIES);
-    VoxelWorldGeneratorSystem<Voxel> _voxelWorldGeneratorSystem = new VoxelWorldGeneratorSystem<Voxel>();
     
     //Used to keep track of the amount of entities currently in the system
     //Used to stop for loops from parsing through the entire list
@@ -73,9 +72,7 @@ public class ECSWorld
 
                     if (_entities[i].HasComponent<VoxelWorld<Voxel>>())
                     {
-                        Console.WriteLine("Adding to Voxel World");
-                        Console.WriteLine(_entities[i].entityName);
-                        _voxelWorldGeneratorSystem.AddEntityToSystemw(_entities[i]);
+                        
                     }
                 }
             }
@@ -84,7 +81,6 @@ public class ECSWorld
         public void LoadSystems()
         {
             _meshSystem.LoadSystem();
-            _voxelWorldGeneratorSystem.LoadSystem();
             
         }
 

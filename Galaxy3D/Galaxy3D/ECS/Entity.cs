@@ -13,6 +13,10 @@ public class Entity
     private string _entityName;
     IComponent[] _components = new IComponent[MAX_COMPONENTS];
     
+    //
+    Entity _parent;
+    List<Entity> _children = new List<Entity>();
+    
     public Entity(int id, string entityName)
     {
         _id = id;
