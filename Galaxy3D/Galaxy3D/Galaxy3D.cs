@@ -101,9 +101,11 @@ public class Galaxy3D : GameWindow
         new Vector2(500,500)
         );
 
-    private Model modelTest = new Model(
-        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/bunny.obj",
-        _world);
+    // private Model modelTest = new Model(
+    //     "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/erato.obj",
+    //     _world);    // private Model modelTest = new Model(
+    //     "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/erato.obj",
+    //     _world);
         
     public Galaxy3D(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings()
     {
@@ -114,21 +116,15 @@ public class Galaxy3D : GameWindow
 
     protected override void OnLoad()
     {
-        _world.GetEntity(0).AddComponent(new Material(
+        
+        _world.CreateEntity("Cube"); 
+        _world.GetEntity("Cube").AddComponent(new Material(
             testShader, 
             atlas, 
             new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
         );
-        _world.GetEntity(0).AddComponent(new Transform());
-        
-        // _world.CreateEntity("Cube"); 
-        // _world.GetEntity(1).AddComponent(new Material(
-        //     testShader, 
-        //     atlas, 
-        //     new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
-        // );
-        // _world.GetEntity(1).AddComponent(new Transform());
-        // _world.GetEntity(1).AddComponent(new MeshRenderer(cubeMesh));
+        _world.GetEntity("Cube").AddComponent(new Transform());
+        _world.GetEntity("Cube").AddComponent(new MeshRenderer(cubeMesh));
         
         
         //load the ecs and get it ready
@@ -141,9 +137,7 @@ public class Galaxy3D : GameWindow
     {
         GL.Enable(EnableCap.DepthTest);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-        // Transform cubeTransform = _world.GetEntity(1).GetComponent<Transform>();
-        // cubeTransform.rotation += new Vector3(0.5f * (float)e.Time, 1f * (float)e.Time, 2f * (float)e.Time);
-        // _world.GetEntity(1).SetComponent(cubeTransform);
+
         _world.UseSystems();
         
         SwapBuffers();

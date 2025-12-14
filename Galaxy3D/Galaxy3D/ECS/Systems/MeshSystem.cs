@@ -16,7 +16,7 @@ public class MeshSystem : ISystem
     private readonly IdGenerator _idGenerator;
     private int currentSystemAmount;
 
-    public MeshSystem(int MAX_ENTITIES)
+    public MeshSystem(long MAX_ENTITIES)
     {
         _entityMeshes = new Entity[MAX_ENTITIES];
         _idGenerator = new IdGenerator(MAX_ENTITIES);
@@ -107,6 +107,7 @@ public class MeshSystem : ISystem
         }
     }
 
+    //Rendering and updating transforms
     public Matrix4 UpdateModelMatrix(Vector3 position, Vector3 rotation, Vector3 scale)
     {
         Vector3 _position = position;
@@ -153,7 +154,7 @@ public class MeshSystem : ISystem
 
     public void AddEntityToSystem(Entity e)
     {
-        var id = _idGenerator.Dequeue();
+        var id = _idGenerator.CreateEntityID();
         _entityMeshes[id] = e;
         currentSystemAmount++;
     }

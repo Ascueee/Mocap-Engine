@@ -18,13 +18,7 @@ public struct Transform : IComponent
         _rotation = Vector3.Zero;
         _scale = Vector3.One;
         
-        _rotationMatrix = Matrix4.CreateRotationX(_rotation.X) * 
-                          Matrix4.CreateRotationY(_rotation.Y) * 
-                          Matrix4.CreateRotationZ(_rotation.Z);
-        
-        _modelMatrix = Matrix4.CreateTranslation(_position) *
-                       _rotationMatrix * 
-                       Matrix4.CreateScale(_scale);
+        UpdareTransform();
     }
     
     public Transform(Vector3 position, Vector3 rotation, Vector3 scale)
@@ -33,6 +27,11 @@ public struct Transform : IComponent
         _rotation = rotation;
         _scale = scale;
         
+        UpdareTransform();
+    }
+
+    void UpdareTransform()
+    {
         _rotationMatrix = Matrix4.CreateRotationX(_rotation.X) * 
                           Matrix4.CreateRotationY(_rotation.Y) * 
                           Matrix4.CreateRotationZ(_rotation.Z);

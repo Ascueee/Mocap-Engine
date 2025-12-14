@@ -1,6 +1,9 @@
 
 using Assimp;
+using Galaxy3D.ECS.Components;
+using OpenTK.Mathematics;
 using Soul.ECS.Components;
+using Material = Soul.ECS.Components.Material;
 
 namespace Galaxy3D.Assets.Models;
 
@@ -26,6 +29,7 @@ public class Model
     /// SKELETON RIGGING INFORMATION
     /// </summary>
 
+    List<Mesh> modelMeshes = new List<Mesh>();
     public Model(string modelFilePath, ECSWorld world)
     {
         var importer = new AssimpContext();
@@ -34,30 +38,40 @@ public class Model
                                                        | PostProcessSteps.FlipUVs
                                                        | PostProcessSteps.JoinIdenticalVertices
                                                        | PostProcessSteps.CalculateTangentSpace);
-        //Need to create a entity with my engine mesh implemtation for each assimp mesh
+        
         foreach (Assimp.Mesh mesh in assimpScene.Meshes)
         {
-          
+            Vector3 min = new Vector3(float.MaxValue);
+            Vector3 max = new Vector3(float.MinValue);
+
+            foreach (var v in mesh.Vertices)
+            {
+                min = Vector3.ComponentMin(min, new Vector3(v.X, v.Y, v.Z));
+                max = Vector3.ComponentMax(max, new Vector3(v.X, v.Y, v.Z));
+            }
+
+            Vector3 center = (min + max) / 2f;
+            
             float[] vertices = new float[mesh.Vertices.Count * 3];
             int vertexArrayIndex = 0;
-            //Now need to create a float[] to convert the mesh data because Assimp meshes hold their vertices in Vector3
+
             for (int i = 0; i < mesh.Vertices.Count; i++)
             {
-                vertices[vertexArrayIndex] = mesh.Vertices[i].X;
-                vertices[vertexArrayIndex + 1] = mesh.Vertices[i].Y;
-                vertices[vertexArrayIndex + 2] = mesh.Vertices[i].Z;
-                
-                vertexArrayIndex += 3; 
+                vertices[vertexArrayIndex]     = mesh.Vertices[i].X - center.X;
+                vertices[vertexArrayIndex + 1] = mesh.Vertices[i].Y - center.Y;
+                vertices[vertexArrayIndex + 2] = mesh.Vertices[i].Z - center.Z;
+
+                vertexArrayIndex += 3;
             }
             
             int vertexCount = mesh.VertexCount;
             float[] textureUVs = new float[vertexCount * 2];
+
             if (mesh.HasTextureCoords(0))
             {
                 for (int i = 0; i < vertexCount; i++)
                 {
                     var uv = mesh.TextureCoordinateChannels[0][i];
-
                     textureUVs[i * 2 + 0] = uv.X;
                     textureUVs[i * 2 + 1] = uv.Y;
                 }
@@ -68,10 +82,8 @@ public class Model
             }
             
             List<uint> indices = new List<uint>();
-            
             foreach (var face in mesh.Faces)
             {
-                // Safety check (Assimp can load non-triangle faces)
                 if (face.IndexCount == 3)
                 {
                     indices.Add((uint)face.Indices[0]);
@@ -79,13 +91,32 @@ public class Model
                     indices.Add((uint)face.Indices[2]);
                 }
             }
+            TextureAtlas atlas = new TextureAtlas(
+                "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Textures/container2.png",
+                500,
+                new Vector2(500,500)
+            );
+            Shader testShader = new Shader(
+                "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/Base.vert",
+                "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/Base.frag");
             
-            //first need to create entity the represents the mesh
             world.CreateEntity(mesh.Name);
-            //this will be where the model stores its info to be rendered in the mesh system
             Mesh engineModelmesh = new Mesh(vertices, textureUVs, indices.ToArray());
-            world.GetEntity(0).AddComponent(new MeshRenderer(engineModelmesh));
+            world.GetEntity(mesh.Name).AddComponent(new MeshRenderer(engineModelmesh));
+
+            world.GetEntity(mesh.Name).AddComponent(new Material(
+                testShader, 
+                atlas, 
+                new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
+            );
+            world.GetEntity(mesh.Name).AddComponent(new Transform());
             
+            Transform objectTransform = world.GetEntity(mesh.Name).GetComponent<Transform>();
+            objectTransform.position = new Vector3(0f, 0f, 0f);
+            objectTransform.scale = new Vector3(0.5f, 0.5f, 0.5f);
+            //objectTransform.rotation += new Vector3(0.5f * (float)e.Time, 0f, 0f);
+
+            world.GetEntity(mesh.Name).SetComponent(objectTransform);
         }
     }
 }

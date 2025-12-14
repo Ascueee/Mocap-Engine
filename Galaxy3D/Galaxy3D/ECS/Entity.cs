@@ -6,14 +6,14 @@ namespace Galaxy3D;
 public class Entity
 {
     //hard coded amount of components per entity
-    static byte MAX_COMPONENTS = 30;
-    private IdGenerator componentIdGenerator = new IdGenerator(MAX_COMPONENTS);
+    static long MAX_COMPONENTS = 100000000;
+    static IdGenerator componentIdGenerator = new IdGenerator(MAX_COMPONENTS);
     
     private int _id;
     private string _entityName;
-    IComponent[] _components = new IComponent[MAX_COMPONENTS];
+    static IComponent[] _components = new IComponent[MAX_COMPONENTS];
     
-    //
+    
     Entity _parent;
     List<Entity> _children = new List<Entity>();
     
@@ -25,7 +25,7 @@ public class Entity
 
     public void AddComponent(IComponent component)
     {
-        component.componentID = componentIdGenerator.Dequeue();
+        component.componentID = componentIdGenerator.CreateEntityID();
         _components[component.componentID] = component;
     }
     

@@ -1,34 +1,34 @@
 namespace Galaxy3D.ECS;
 
 /// <summary>
-/// Generates IDS for objects as well as keeps what ids have been used and recycled to be used later
+/// Generates IDs for entities and recycles released IDs.
+/// IDs are generated lazily (on demand).
 /// </summary>
 public class IdGenerator
 {
-    private int maxAmountOfIds;
-    Queue<int> idQue = new Queue<int>();
-    public IdGenerator(int maxAmountOfIds)
+    private readonly long maxAmountOfIds;
+    private long nextId = 0;
+
+    private readonly Queue<int> recycledIds = new();
+
+    public IdGenerator(long maxAmountOfIds)
     {
         this.maxAmountOfIds = maxAmountOfIds;
-        PopulateIDQueue();
     }
 
-    public int Dequeue()
+    public int CreateEntityID()
     {
-        return idQue.Dequeue();
+        if (recycledIds.Count > 0)
+            return recycledIds.Dequeue();
+
+        if (nextId >= maxAmountOfIds)
+            throw new InvalidOperationException("Maximum number of entity IDs reached.");
+
+        return (int)nextId++;
     }
 
-    public void Enqueue(int id)
+    public void ReleaseEntityID(int id)
     {
-        idQue.Enqueue(id);
-    }
-    
-    void PopulateIDQueue()
-    {
-        idQue.Clear();
-        for (int i = 0; i < maxAmountOfIds; i++)
-        {
-            idQue.Enqueue(i);
-        }
+        recycledIds.Enqueue(id);
     }
 }

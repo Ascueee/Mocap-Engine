@@ -12,11 +12,12 @@ namespace Galaxy3D;
 /// </summary>
 public class ECSWorld
 {
-    //The max amount of entities the system can hold
-    private const int MAX_ENTITIES = 1000000;
-    IdGenerator _entityIdGenerator = new IdGenerator(MAX_ENTITIES);
-    Entity[] _entities = new Entity[MAX_ENTITIES];
-    MeshSystem _meshSystem = new MeshSystem(MAX_ENTITIES);
+    //The max amount of entities the system can holdw
+    private const long MAX_ENTITIES = 100000000;
+    static IdGenerator _entityIdGenerator = new IdGenerator(MAX_ENTITIES);
+    static Entity[] _entities = new Entity[MAX_ENTITIES];
+    static MeshSystem _meshSystem = new MeshSystem(MAX_ENTITIES);
+    static Dictionary<string, int> _entityLookup = new Dictionary<string, int>();
     
     //Used to keep track of the amount of entities currently in the system
     //Used to stop for loops from parsing through the entire list
@@ -26,8 +27,9 @@ public class ECSWorld
         //Creates an entity in the system as well as gives it an id
         public void CreateEntity(string entityName)
         {
-            int id = _entityIdGenerator.Dequeue(); //removes id from que
+            int id = _entityIdGenerator.CreateEntityID(); 
             Entity newEntity = new Entity(id, entityName); 
+            _entityLookup.Add(entityName, id);
             _entities[id] = newEntity;
             _currentEntityAmount++;
         }
@@ -35,7 +37,7 @@ public class ECSWorld
         //Deletes the entity from the system and repopulates the que with the ID to be reused
         public void DeleteEntity(int entityID)
         {
-            _entityIdGenerator.Enqueue(_entities[entityID].id);
+            _entityIdGenerator.ReleaseEntityID(_entities[entityID].id);
             _entities[entityID] = null;
             _currentEntityAmount--;
         }
@@ -43,6 +45,11 @@ public class ECSWorld
         public Entity GetEntity(int entityID)
         {
             return _entities[entityID];
+        }
+        
+        public Entity GetEntity(string entityName)
+        {
+            return _entities[_entityLookup[entityName]];
         }
         
         public void PrintEntities()
@@ -86,6 +93,9 @@ public class ECSWorld
 
         public void UseSystems()
         {
+            //transform
+            //camera system
+            //render system should be updates last
             _meshSystem.UpdateSystem();
         }
     
