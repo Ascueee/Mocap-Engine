@@ -1,11 +1,10 @@
-
 using Assimp;
+using Galaxy3D.ECS;
 using Galaxy3D.ECS.Components;
 using OpenTK.Mathematics;
-using Soul.ECS.Components;
-using Material = Soul.ECS.Components.Material;
+using Material = Galaxy3D.ECS.Components.Material;
 
-namespace Galaxy3D.Assets.Models;
+namespace Galaxy3D.Assets;
 
 public class Model
 {
@@ -20,8 +19,6 @@ public class Model
     ///     Also need to create a skinned renderer for skeletal animation
     /// Then need to convert the assimp mesh data to work with my engines Mesh asset
     /// The Mesh asset will then be used in the Mesh renderer to render the model
-    
-    /// 
     /// THIS FILE WILL BE EXPANED TO ADD:
     /// TEXTURES FROM MODELS
     /// MATERIALS FROM MODELS
@@ -30,7 +27,9 @@ public class Model
     /// </summary>
 
     List<Mesh> modelMeshes = new List<Mesh>();
-    public Model(string modelFilePath, ECSWorld world)
+    private Entity _modelMainEntity;
+    
+    public Model(string modelName, string modelFilePath, ECSWorld world)
     {
         var importer = new AssimpContext();
         var assimpScene = importer.ImportFile(modelFilePath, PostProcessSteps.Triangulate
@@ -39,27 +38,29 @@ public class Model
                                                        | PostProcessSteps.JoinIdenticalVertices
                                                        | PostProcessSteps.CalculateTangentSpace);
         
+        world.CreateEntity(modelName);
+        _modelMainEntity = world.GetEntity(modelName);
+        
+        TextureAtlas atlas = new TextureAtlas(
+            "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Textures/container2.png",
+            1,
+            new Vector2(1,1)
+        );
+        Shader testShader = new Shader(
+            "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/EngineBase.vert",
+            "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/EngineBase.frag");
+        
+        //Itterates through the model mesh can creates entities
         foreach (Assimp.Mesh mesh in assimpScene.Meshes)
         {
-            Vector3 min = new Vector3(float.MaxValue);
-            Vector3 max = new Vector3(float.MinValue);
-
-            foreach (var v in mesh.Vertices)
-            {
-                min = Vector3.ComponentMin(min, new Vector3(v.X, v.Y, v.Z));
-                max = Vector3.ComponentMax(max, new Vector3(v.X, v.Y, v.Z));
-            }
-
-            Vector3 center = (min + max) / 2f;
-            
             float[] vertices = new float[mesh.Vertices.Count * 3];
             int vertexArrayIndex = 0;
 
             for (int i = 0; i < mesh.Vertices.Count; i++)
             {
-                vertices[vertexArrayIndex]     = mesh.Vertices[i].X - center.X;
-                vertices[vertexArrayIndex + 1] = mesh.Vertices[i].Y - center.Y;
-                vertices[vertexArrayIndex + 2] = mesh.Vertices[i].Z - center.Z;
+                vertices[vertexArrayIndex] = mesh.Vertices[i].X;
+                vertices[vertexArrayIndex + 1] = mesh.Vertices[i].Y;
+                vertices[vertexArrayIndex + 2] = mesh.Vertices[i].Z;
 
                 vertexArrayIndex += 3;
             }
@@ -81,6 +82,20 @@ public class Model
                 Console.WriteLine("Mesh has no UVs");
             }
             
+            float[] normals = new float[mesh.Normals.Count * 3];
+            if (mesh.HasNormals == true)
+            {
+                vertexArrayIndex = 0;
+                for (int i = 0; i < mesh.Normals.Count; i++)
+                {
+                    normals[vertexArrayIndex] = mesh.Normals[i].X;
+                    normals[vertexArrayIndex + 1] = mesh.Normals[i].Y;
+                    normals[vertexArrayIndex + 2] = mesh.Normals[i].Z;
+
+                    vertexArrayIndex += 3;
+                }
+            }
+            
             List<uint> indices = new List<uint>();
             foreach (var face in mesh.Faces)
             {
@@ -91,31 +106,25 @@ public class Model
                     indices.Add((uint)face.Indices[2]);
                 }
             }
-            TextureAtlas atlas = new TextureAtlas(
-                "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Textures/container2.png",
-                500,
-                new Vector2(500,500)
-            );
-            Shader testShader = new Shader(
-                "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/Base.vert",
-                "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/Base.frag");
-            
-            world.CreateEntity(mesh.Name);
-            Mesh engineModelmesh = new Mesh(vertices, textureUVs, indices.ToArray());
-            world.GetEntity(mesh.Name).AddComponent(new MeshRenderer(engineModelmesh));
 
+            world.CreateEntity(mesh.Name);
+            _modelMainEntity.children.Add(mesh.Name, world.GetEntity(mesh.Name));
+            Mesh engineModelmesh = new Mesh(vertices, textureUVs, normals ,indices.ToArray());
+            world.GetEntity(mesh.Name).AddComponent(new MeshRenderer(engineModelmesh));
             world.GetEntity(mesh.Name).AddComponent(new Material(
                 testShader, 
                 atlas, 
-                new Vector4(1.0f, 0.5f, 0.5f, 1.0f))
+                new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+                0.2f,
+                32f)
             );
             world.GetEntity(mesh.Name).AddComponent(new Transform());
             
+            //Updates the transform off the object
             Transform objectTransform = world.GetEntity(mesh.Name).GetComponent<Transform>();
             objectTransform.position = new Vector3(0f, 0f, 0f);
-            objectTransform.scale = new Vector3(0.5f, 0.5f, 0.5f);
-            //objectTransform.rotation += new Vector3(0.5f * (float)e.Time, 0f, 0f);
-
+            objectTransform.scale = new Vector3(0.08f, 0.08f, 0.08f);
+            
             world.GetEntity(mesh.Name).SetComponent(objectTransform);
         }
     }

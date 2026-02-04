@@ -1,4 +1,4 @@
-namespace Galaxy3D.EngineSpecific;
+namespace Galaxy3D.EngineSpecific.Voxels;
 
 /// <summary>
 /// This will hold a list of registed voxels

@@ -7,4 +7,5 @@ namespace Galaxy3D.ECS.Components;
 public interface IComponent
 {
     public int componentID { get; set; }
+    public bool isActive { get; set; }
 }

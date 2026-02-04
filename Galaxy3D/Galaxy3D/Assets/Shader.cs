@@ -1,7 +1,7 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-namespace Galaxy3D;
+namespace Galaxy3D.Assets;
 
 public class Shader
 {
@@ -150,12 +150,26 @@ public class Shader
         int location = GL.GetUniformLocation(handle, name);
         GL.Uniform1(location, val);
     }
-
+    
+    public void SetFloat(string name, float val)
+    {
+        int location = GL.GetUniformLocation(handle, name);
+        GL.Uniform1(location, val);
+    }
+    
+    public void SetVec3(string name, Vector3 val)
+    {
+        int location = GL.GetUniformLocation(handle, name);
+        GL.Uniform3(location, val.X, val.Y, val.Z);
+    }
+    
     public void SetVec4(string name, Vector4 val)
     {
         int location = GL.GetUniformLocation(handle, name);
         GL.Uniform4(location, val.X, val.Y, val.Z, val.W);
     }
+    
+    
     
     
     public void SetMat4(string name, Matrix4 mat)

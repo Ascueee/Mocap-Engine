@@ -1,21 +1,21 @@
-using Galaxy3D.ECS;
 using Galaxy3D.ECS.Components;
 
-namespace Galaxy3D;
+namespace Galaxy3D.ECS;
 
 public class Entity
 {
     //hard coded amount of components per entity
-    static long MAX_COMPONENTS = 100000000;
-    static IdGenerator componentIdGenerator = new IdGenerator(MAX_COMPONENTS);
+    int _maxEntities = 100;
+    IdGenerator componentIdGenerator = new IdGenerator(100);
+    private int entityComponentAmount = 0;
     
     private int _id;
     private string _entityName;
-    static IComponent[] _components = new IComponent[MAX_COMPONENTS];
+    IComponent[] _components = new IComponent[100];
     
-    
+    //this is the child parent hierachy for the entities
     Entity _parent;
-    List<Entity> _children = new List<Entity>();
+    Dictionary<string, Entity> _children = new Dictionary<string, Entity>();
     
     public Entity(int id, string entityName)
     {
@@ -25,10 +25,19 @@ public class Entity
 
     public void AddComponent(IComponent component)
     {
+        if (entityComponentAmount == _maxEntities)
+        {
+            _maxEntities += 100;
+            componentIdGenerator.maxAmountOfIds = _maxEntities;
+            var updatedArray = new IComponent[_maxEntities];
+            _components.CopyTo(updatedArray, 0);
+            _components = updatedArray;
+        }
+        
         component.componentID = componentIdGenerator.CreateEntityID();
         _components[component.componentID] = component;
+        entityComponentAmount++;
     }
-    
     public T GetComponent<T>() where T : IComponent
     {
         for(int i = 0; i < _components.Length; i++)
@@ -77,6 +86,12 @@ public class Entity
         return false;
     }
 
+    public void SetChild(Entity child)
+    {
+        child.parent = this;
+        children.Add(child._entityName, child);
+    }
+
     public void PrintComponents()
     {
         Console.WriteLine($"Components in {entityName}:");
@@ -90,5 +105,7 @@ public class Entity
     
     public int id => _id;
     public string entityName => _entityName;
+    public Entity parent { get => _parent; set => _parent = value; }
+    public Dictionary<string, Entity> children => _children;
 
 }

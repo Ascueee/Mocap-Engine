@@ -1,54 +1,75 @@
 using Galaxy3D.Assets;
-using Galaxy3D.ECS;
 using Galaxy3D.ECS.Components;
-using Galaxy3D.ECS.Systems.ComponentSystems;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
-using Soul.ECS.Components;
-namespace Galaxy3D;
 
-/// <summary>
-/// Handles the logic behind the mesh renderer
-/// </summary>
+namespace Galaxy3D.ECS.Systems;
+
 public class MeshSystem : ISystem
 {
-    private readonly Entity[] _entityMeshes;
+    private Entity[] _renderEntities;
     private readonly IdGenerator _idGenerator;
-    private int currentSystemAmount;
+    private int _currentSystemAmount;
+    int _maxEntities = 100;
+    private DebugCamera _renderCamera;
+    
+    //Lights
+    private List<Entity> _lights = new List<Entity>(); //TODO CHANGE: THIS TO A LIST OF LIGHTS COMPONENTS
+    private int _amountOfDirLights;
+    private int _amountOfPointLights;
+    
 
-    public MeshSystem(long MAX_ENTITIES)
+    public MeshSystem(int MAX_ENTITIES)
     {
-        _entityMeshes = new Entity[MAX_ENTITIES];
+        _renderEntities = new Entity[MAX_ENTITIES];
         _idGenerator = new IdGenerator(MAX_ENTITIES);
     }
-
-    //This is where all the data is loaded for rendering
-    //Set up VAOs, and VBOS for each of the entities
+    
     public void LoadSystem()
     {
-        for (var i = 0; i < currentSystemAmount; i++)
+        for (var i = 0; i < _currentSystemAmount; i++)
         {
-            Console.WriteLine(_entityMeshes[i].entityName);
-            Material entityMat = _entityMeshes[i].GetComponent<Material>();
-            MeshRenderer entityMesh = _entityMeshes[i].GetComponent<MeshRenderer>();
+            //Console.WriteLine(_renderEntities[i].entityName);
 
-
-            //Load the shader
-            entityMat.shader.Load(); 
-            entityMat.texture.Load();
-            if (entityMat.texture is TextureAtlas)
+            //Add lights to system
+            if (_renderEntities[i].HasComponent<DirectionalLight>())
             {
-                TextureAtlas atlas;
-                atlas = (TextureAtlas)entityMat.texture;
-                entityMesh.uvData = atlas.UpdateMeshUVs(0, entityMesh.uvData);
-                
+                Console.WriteLine(_renderEntities[i].entityName + " Light Added");
+                _lights.Add(_renderEntities[i]);
+                _amountOfDirLights++;
             }
             
-            entityMesh.renderMeshData = CombineMeshData(entityMesh.meshData, entityMesh.uvData);
+            if (_renderEntities[i].HasComponent<PointLight>())
+            {
+                Console.WriteLine(_renderEntities[i].entityName + " Light Added");
+                _lights.Add(_renderEntities[i]);
+                _amountOfPointLights++;
+            }
             
+            if (!_renderEntities[i].HasComponent<MeshRenderer>()) continue;
+            Material entityMat = _renderEntities[i].GetComponent<Material>();
+            MeshRenderer entityMesh = _renderEntities[i].GetComponent<MeshRenderer>();
+                
+            //Load the shader
+            entityMat.shader.Load();
+
+            if (entityMat.texture is not null)
+            {
+                entityMat.texture.Load();
+                if (entityMat.texture is TextureAtlas)
+                {
+                    TextureAtlas atlas;
+                    atlas = (TextureAtlas)entityMat.texture;
+                    entityMesh.uvData = atlas.UpdateMeshUVs(0, entityMesh.uvData);
+                    
+                }
+            }
+                
+            entityMesh.renderMeshData = CombineMeshData(entityMesh.meshData, entityMesh.uvData, entityMesh.normalData);
+                
             entityMesh.vao = GL.GenVertexArray();
             GL.BindVertexArray(entityMesh.vao);
-            
+                
             entityMesh.vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, entityMesh.vbo);
             GL.BufferData(
@@ -57,7 +78,7 @@ public class MeshSystem : ISystem
                 entityMesh.renderMeshData,
                 BufferUsageHint.StaticDraw
             );
-            
+                
             entityMesh.ebo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, entityMesh.ebo);
             GL.BufferData(
@@ -65,48 +86,124 @@ public class MeshSystem : ISystem
                 entityMesh.indices.Length * sizeof(uint),
                 entityMesh.indices,
                 BufferUsageHint.StaticDraw
-                );
-            
-            //Now giving context to the vertex data
+            );
+                
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float,
-                false, 5 * sizeof(float), 0);
+                false, 8 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float),
+            GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float),
                 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
-            entityMat.texture.Use(TextureUnit.Texture0);
-            _entityMeshes[i].SetComponent<MeshRenderer>(entityMesh);
+            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float),
+                5 * sizeof(float));
+            GL.EnableVertexAttribArray(2);
+                
+            if(entityMat.texture is not null)
+                entityMat.texture.Use(TextureUnit.Texture0);
+            _renderEntities[i].SetComponent<MeshRenderer>(entityMesh);
         }
     }
-
-    //Draw the mesh and update system logic for each rendering
+    
     public void UpdateSystem()
     {
-        for (var i = 0; i < currentSystemAmount; i++)
+        for (var i = 0; i < _currentSystemAmount; i++)
         {
-            Material entityMat = _entityMeshes[i].GetComponent<Material>();
-            MeshRenderer entityMesh = _entityMeshes[i].GetComponent<MeshRenderer>();
-            Transform entityTransform = _entityMeshes[i].GetComponent<Transform>();
-
+            int indexDir = 0;
+            int indexPoint = 0;
+            if (!_renderEntities[i].HasComponent<MeshRenderer>()) continue;
+            Material entityMat = _renderEntities[i].GetComponent<Material>();
+            MeshRenderer entityMesh = _renderEntities[i].GetComponent<MeshRenderer>();
+            Transform entityTransform = _renderEntities[i].GetComponent<Transform>();
+            
             Matrix4 model = UpdateModelMatrix(entityTransform.position, entityTransform.rotation, entityTransform.scale);
-            Matrix4 view = Matrix4.CreateTranslation(0.0f, 0.0f, -3.0f);
+                
+            //NOTE TO SELF: get this from the camera componenent which gets updated in the camera system
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90f),
                 800f / 600f, 0.1f, 100.0f);
-
-            entityMat.texture.Use(TextureUnit.Texture0);
-            entityMat.shader.Use();
             
+            renderCamera.UpdateLookVectors();
+            if (entityMat.texture is not null)
+            {
+                entityMat.texture.Use(TextureUnit.Texture0);  
+            }
+
+            entityMat.shader.Use();
             GL.BindVertexArray(entityMesh.vao);
             entityMat.shader.SetVec4("color", entityMat.materialColor);
             entityMat.shader.SetMat4("model", model);
-            entityMat.shader.SetMat4("view", view);
-            entityMat.shader.SetMat4("projection", projection);
+            entityMat.shader.SetMat4("view", renderCamera.GetViewMatrix());
+            entityMat.shader.SetMat4("projection", renderCamera.GetProjectionMatrix());
             
+            //Material Struct
+            entityMat.shader.SetVec3("mat.ambient", entityMat.materialColor.Xyz);
+            entityMat.shader.SetVec3("mat.ambient", entityMat.materialColor.Xyz);
+            entityMat.shader.SetVec3("mat.diffuse", entityMat.materialColor.Xyz);
+            entityMat.shader.SetVec3("mat.specular", entityMat.specularStrenght);
+            entityMat.shader.SetFloat("mat.shine", entityMat.shine);
+            
+            entityMat.shader.SetInt("amountDirLights", _amountOfDirLights);
+            entityMat.shader.SetInt("amountPointLights", _amountOfPointLights);
+            
+            Console.WriteLine("Amount of lights is: " + _lights.Count);
+            Console.WriteLine("Current Dir amount: " + _amountOfDirLights);
+            Console.WriteLine("Current Point amount: " + _amountOfPointLights);
+            
+            //TODO: CURRENT BUG NEED TO FIX INDEXING WITH THE LIGHT ARRAYS
+            //Light Struct
+            for (int l = 0; l < _lights.Count; l++)
+            {
+                Transform lightTransform = _lights[l].GetComponent<Transform>();
+                
+                if(_lights[l].HasComponent<PointLight>())
+                {
+                    Console.WriteLine("Light " + _lights[l].entityName + " Light");
+                    PointLight systemLight = _lights[l].GetComponent<PointLight>();
+                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].color", systemLight.lightColor);
+                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].position", lightTransform.position);
+                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].ambient", systemLight.ambient);
+                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].diffuse", systemLight.diffuse);
+                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].specular", systemLight.specular);
+                    entityMat.shader.SetFloat($"pointLights[{indexPoint}].constant", systemLight.constant);
+                    entityMat.shader.SetFloat($"pointLights[{indexPoint}].linear", systemLight.linear);
+                    entityMat.shader.SetFloat($"pointLights[{indexPoint}].quadratic", systemLight.quadratic);
+                    indexPoint++;
+                }
+                else
+                {
+                    DirectionalLight systemLight = _lights[l].GetComponent<DirectionalLight>();
+                                    
+                    entityMat.shader.SetVec3($"dirLights[{indexDir}].color", systemLight.lightColor);
+                    entityMat.shader.SetVec3($"dirLights[{indexDir}].dir", lightTransform.position);
+                    entityMat.shader.SetVec3($"dirLights[{indexDir}].ambient", systemLight.ambient);
+                    entityMat.shader.SetVec3($"dirLights[{indexDir}].diffuse", systemLight.diffuse);
+                    entityMat.shader.SetVec3($"dirLights[{indexDir}].specular", systemLight.specular);
+
+                    indexDir++;
+                }
+            }
+
             GL.DrawElements(PrimitiveType.Triangles, entityMesh.indices.Length,
                 DrawElementsType.UnsignedInt, 0);
         }
     }
+    
+    public void AddEntityToSystem(Entity e)
+    {
+        if (_currentSystemAmount == _renderEntities.Length)
+        {
+            _maxEntities += 100;
+            _idGenerator.maxAmountOfIds = _maxEntities;
+            var updatedArray = new Entity[_maxEntities];
+            _renderEntities.CopyTo(updatedArray, 0);
+            _renderEntities = updatedArray;
+        }
+        
+        var id = _idGenerator.CreateEntityID();
+        _renderEntities[id] = e;
+        _currentSystemAmount++;
+    }
 
+    //NOTE TO SELF MAKE THIS A PART OF THE TRANSFORM SYSTEM
     //Rendering and updating transforms
     public Matrix4 UpdateModelMatrix(Vector3 position, Vector3 rotation, Vector3 scale)
     {
@@ -121,18 +218,17 @@ public class MeshSystem : ISystem
 
         return Matrix4.CreateTranslation(_position) * _rotationMatrix * Matrix4.CreateScale(_scale);
     }
-
-
-    //Combines the vertex and uv data together in the future will add normals and etc
-    public float[] CombineMeshData(float[] vertexData, float[] uvData)
+    
+    public float[] CombineMeshData(float[] vertexData, float[] uvData, float[] normalData)
     {
-        float[] combinedMesh = new float[vertexData.Length + uvData.Length];
+        float[] combinedMesh = new float[vertexData.Length + uvData.Length + normalData.Length];
         
         int indexCounterMesh = 0;
         int indexCounterVertex = 0;
         int indexCounterUV = 0;
+        int indexCounterNormal = 0;
         
-        for (int i = 0; i < (combinedMesh.Length / 5); i++)
+        for (int i = 0; i < (combinedMesh.Length / 8); i++)
         {
 
             //these make up the vertices
@@ -144,18 +240,21 @@ public class MeshSystem : ISystem
             combinedMesh[indexCounterMesh + 3] = uvData[indexCounterUV];
             combinedMesh[indexCounterMesh + 4] = uvData[indexCounterUV + 1];
             
-            indexCounterMesh += 5;
+            //normals
+            combinedMesh[indexCounterMesh + 5] = normalData[indexCounterNormal];
+            combinedMesh[indexCounterMesh + 6] = normalData[indexCounterNormal + 1];
+            combinedMesh[indexCounterMesh + 7] = normalData[indexCounterNormal + 2];
+            
+            
+            indexCounterMesh += 8;
             indexCounterVertex += 3;
             indexCounterUV += 2;
+            indexCounterNormal += 3;
         }
         
         return combinedMesh;
     }
 
-    public void AddEntityToSystem(Entity e)
-    {
-        var id = _idGenerator.CreateEntityID();
-        _entityMeshes[id] = e;
-        currentSystemAmount++;
-    }
+    public DebugCamera renderCamera { get { return _renderCamera; } set => _renderCamera = value; }
+
 }

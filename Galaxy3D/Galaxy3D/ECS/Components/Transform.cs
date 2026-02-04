@@ -5,6 +5,7 @@ namespace Galaxy3D.ECS.Components;
 public struct Transform : IComponent
 {
     private int _componentID;
+    private bool _isActive;
     Vector3 _position;
     Vector3 _rotation;
     Vector3 _scale;
@@ -43,6 +44,7 @@ public struct Transform : IComponent
     
     
     public int componentID { get; set; }
+    public bool isActive { get; set; }
     public Vector3 position {get => _position; set => _position = value; }
     public Vector3 rotation {get => _rotation; set => _rotation = value; }
     public Vector3 scale {get => _scale; set => _scale = value; }

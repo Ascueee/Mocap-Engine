@@ -1,6 +1,6 @@
 using Galaxy3D.ECS.Components;
-using Galaxy3D.ECS.Systems.ComponentSystems;
 using Galaxy3D.EngineSpecific;
+using Galaxy3D.EngineSpecific.Voxels;
 
 namespace Galaxy3D.ECS.Systems;
 

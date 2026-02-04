@@ -1,6 +1,6 @@
 using Galaxy3D.Assets;
 
-namespace Galaxy3D.EngineSpecific;
+namespace Galaxy3D.EngineSpecific.Voxels;
 
 /// <summary>
 /// Constructor takes in the size of the chunk its one int because the chunks are square so 5x5x5

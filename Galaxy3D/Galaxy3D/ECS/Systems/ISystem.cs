@@ -1,4 +1,4 @@
-namespace Galaxy3D.ECS.Systems.ComponentSystems;
+namespace Galaxy3D.ECS.Systems;
 
 public interface ISystem
 {

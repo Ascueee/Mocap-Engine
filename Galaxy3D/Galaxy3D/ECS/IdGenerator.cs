@@ -6,14 +6,14 @@ namespace Galaxy3D.ECS;
 /// </summary>
 public class IdGenerator
 {
-    private readonly long maxAmountOfIds;
-    private long nextId = 0;
+    private int _maxAmountOfIds;
+    private long _nextId = 0;
 
     private readonly Queue<int> recycledIds = new();
 
-    public IdGenerator(long maxAmountOfIds)
+    public IdGenerator(int maxAmountOfIds)
     {
-        this.maxAmountOfIds = maxAmountOfIds;
+        this._maxAmountOfIds = maxAmountOfIds;
     }
 
     public int CreateEntityID()
@@ -21,14 +21,16 @@ public class IdGenerator
         if (recycledIds.Count > 0)
             return recycledIds.Dequeue();
 
-        if (nextId >= maxAmountOfIds)
+        if (_nextId > _maxAmountOfIds)
             throw new InvalidOperationException("Maximum number of entity IDs reached.");
 
-        return (int)nextId++;
+        return (int)_nextId++;
     }
 
     public void ReleaseEntityID(int id)
     {
         recycledIds.Enqueue(id);
     }
+    
+    public int maxAmountOfIds {get => _maxAmountOfIds; set => _maxAmountOfIds = value; }
 }

@@ -1,5 +1,5 @@
 
-namespace Galaxy3D.EngineSpecific;
+namespace Galaxy3D.EngineSpecific.Voxels;
 
 /// <summary>
 /// This is a basic data contained that will hold data pertaining to what is being housed in the voxel grid

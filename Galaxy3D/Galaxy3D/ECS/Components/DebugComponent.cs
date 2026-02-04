@@ -11,6 +11,7 @@ public struct DebugComponent : IComponent
         this.msg = msg;
     }
     
-    public int componentID { get { return _componentID; } set => _componentID = value; }
+    public int componentID { get; set; }
+    public bool isActive { get; set; }
 
 }

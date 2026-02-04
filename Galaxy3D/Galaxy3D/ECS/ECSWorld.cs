@@ -1,10 +1,10 @@
-using Soul.ECS.Components;
-using Galaxy3D.ECS;
 using Galaxy3D.ECS.Components;
 using Galaxy3D.ECS.Systems;
-using Galaxy3D.EngineSpecific;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace Galaxy3D;
+namespace Galaxy3D.ECS;
 /// <summary>
 /// Manages the entity flow in the system and is the representation of the whole ECS(u can make more ECS systems with each world)
 /// populates each entity with an id that will be the entities refrence for each of its components in the system
@@ -13,11 +13,14 @@ namespace Galaxy3D;
 public class ECSWorld
 {
     //The max amount of entities the system can holdw
-    private const long MAX_ENTITIES = 100000000;
-    static IdGenerator _entityIdGenerator = new IdGenerator(MAX_ENTITIES);
-    static Entity[] _entities = new Entity[MAX_ENTITIES];
-    static MeshSystem _meshSystem = new MeshSystem(MAX_ENTITIES);
-    static Dictionary<string, int> _entityLookup = new Dictionary<string, int>();
+    int _maxEntities = 800;
+    IdGenerator _entityIdGenerator = new IdGenerator(800);
+    
+    //Need to make it so that the arrays created doubles when its full
+    Entity[] _entities = new Entity[800];
+    MeshSystem _meshSystem = new MeshSystem(800);
+    Dictionary<string, int> _entityLookup = new Dictionary<string, int>();
+    private DebugCamera testCam;
     
     //Used to keep track of the amount of entities currently in the system
     //Used to stop for loops from parsing through the entire list
@@ -27,7 +30,18 @@ public class ECSWorld
         //Creates an entity in the system as well as gives it an id
         public void CreateEntity(string entityName)
         {
-            int id = _entityIdGenerator.CreateEntityID(); 
+            if (_currentEntityAmount == _maxEntities)
+            {
+                _maxEntities += 100;
+                _entityIdGenerator.maxAmountOfIds = _maxEntities;
+                var updatedArray = new Entity[_maxEntities];
+                _entities.CopyTo(updatedArray, 0);
+                _entities = updatedArray;
+            }
+            
+            int id = _entityIdGenerator.CreateEntityID();
+            if (_entityLookup.ContainsKey(entityName))
+                entityName = entityName + "_copy"+id;
             Entity newEntity = new Entity(id, entityName); 
             _entityLookup.Add(entityName, id);
             _entities[id] = newEntity;
@@ -61,6 +75,7 @@ public class ECSWorld
             }
         }
         
+        
     #endregion
     
     #region Systems
@@ -71,15 +86,15 @@ public class ECSWorld
             {
                 if (_entities[i] is not null)
                 {
-                    if (_entities[i].HasComponent<MeshRenderer>())
+                    if (_entities[i].HasComponent<DirectionalLight>())
                     {
-                        Console.WriteLine("Adding to Mesh Renderer");
+                        Console.WriteLine("A light has been added to system: " + _entities[i].entityName);
                         _meshSystem.AddEntityToSystem(_entities[i]);
                     }
-
-                    if (_entities[i].HasComponent<VoxelWorld<Voxel>>())
+                    
+                    if (_entities[i].HasComponent<MeshRenderer>())
                     {
-                        
+                        _meshSystem.AddEntityToSystem(_entities[i]);
                     }
                 }
             }
@@ -88,7 +103,9 @@ public class ECSWorld
         public void LoadSystems()
         {
             _meshSystem.LoadSystem();
-            
+            testCam = new DebugCamera(Vector3.UnitZ * 3, 800 / (float)600);
+            _meshSystem.renderCamera = testCam;
+
         }
 
         public void UseSystems()
@@ -97,7 +114,17 @@ public class ECSWorld
             //camera system
             //render system should be updates last
             _meshSystem.UpdateSystem();
+            
         }
+        
+        //NOTE TO SELF DELETE THESE LATER:
+        //TODO: Add a camera system!!
+        public void TestCameraMove(FrameEventArgs e, KeyboardState input, MouseState mouse)
+        {
+            _meshSystem.renderCamera.MoveAround(input, e);
+            _meshSystem.renderCamera.RotateCamera(mouse);
+        }
+        
     
     #endregion
     
