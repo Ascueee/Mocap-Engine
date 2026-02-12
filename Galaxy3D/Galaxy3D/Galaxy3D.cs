@@ -6,7 +6,6 @@ using OpenTK.Windowing.Desktop;
 using Galaxy3D.Assets;
 using Galaxy3D.ECS;
 using Galaxy3D.ECS.Components;
-using Galaxy3D.EngineSpecific;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Galaxy3D;
@@ -62,12 +61,12 @@ public class Galaxy3D : GameWindow
         }, 
         new uint[]
         {
-            0,1,2, 2,3,0,       // Back
-            4,5,6, 6,7,4,       // Front
-            8,9,10, 10,11,8,    // Left
-            12,13,14, 14,15,12, // Right
-            16,17,18, 18,19,16, // Bottom
-            20,21,22, 22,23,20  // Top
+            0, 3, 2, 2, 1, 0,    // Back 
+            4, 5, 6, 6, 7, 4,    // Front
+            8, 9, 10, 10, 11, 8, // Left
+            12, 15, 14, 14, 13, 12, // Right 
+            16, 17, 18, 18, 19, 16, // Bottom
+            20, 23, 22, 22, 21, 20  // Top
         });
 
     
@@ -115,7 +114,7 @@ public class Galaxy3D : GameWindow
     
     private Model modelTest = new Model(
         "TestModel",
-        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/teapot.obj",
+        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/erato.obj",
         _world);
         
     public Galaxy3D(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings()
@@ -136,115 +135,53 @@ public class Galaxy3D : GameWindow
             lightShader, 
             atlas, 
             new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-            1f,
-            40f)
+            0.3f,
+            23f)
         );
         _world.GetEntity("Cube").AddComponent(new Transform
-        (new Vector3(0.0f, 1.0f, 0.0f),
+        (new Vector3(-3.0f, -2.0f, 0.0f),
             Vector3.Zero,
             new Vector3(4f)));
         _world.GetEntity("Cube").AddComponent(new MeshRenderer(cubeMesh));
         
         //Light One
-        _world.CreateEntity("LightSource"); 
-        _world.GetEntity("LightSource").AddComponent(new Material(
+        _world.CreateEntity("Directional Light"); 
+        _world.GetEntity("Directional Light").AddComponent(new Material(
             testShader, 
             baseWhiteTexture, 
             new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
             0.2f,
             32f)
         );
-        _world.GetEntity("LightSource").AddComponent(new Transform
-        (new Vector3(-1.0f, -1.0f, -0.5f),
+        _world.GetEntity("Directional Light").AddComponent(new Transform
+        (new Vector3(-0.2f, -1.0f, -0.3f),
             Vector3.Zero,
             Vector3.One));
-        _world.GetEntity("LightSource").AddComponent(new MeshRenderer(cubeMesh));
-        _world.GetEntity("LightSource").AddComponent(new DirectionalLight(
+        _world.GetEntity("Directional Light").AddComponent(new MeshRenderer(cubeMesh));
+        _world.GetEntity("Directional Light").AddComponent(new DirectionalLight(
             new Vector3(0.5f, 0.5f, 0.5f),
-            new Vector3(0.2f),
-            new Vector3(0.5f),
-            new Vector3(0.2f)));
+            new Vector3(1.0f),
+            new Vector3(1.0f),
+            new Vector3(1.0f)));
         
-        //Light Two
-        _world.CreateEntity("LightSourceTwo"); 
-        _world.GetEntity("LightSourceTwo").AddComponent(new Material(
-            testShader, 
-            baseWhiteTexture, 
-            new Vector4(0.0f, 0.0f, 1.0f, 1.0f),
-            0.5f,
-            32f)
-        );
-        _world.GetEntity("LightSourceTwo").AddComponent(new Transform
-        (new Vector3(-1.0f, 0.0f, -0.5f),
-            Vector3.Zero,
-            Vector3.One));
-        _world.GetEntity("LightSourceTwo").AddComponent(new MeshRenderer(cubeMesh));
-        _world.GetEntity("LightSourceTwo").AddComponent(new DirectionalLight(
-            new Vector3(0.0f, 0.0f, 1.0f),
-            new Vector3(0.1f),
-            new Vector3(0.5f),
-            new Vector3(0.2f)));
-        
-        // //Light Three
-        // _world.CreateEntity("LightSourceThree"); 
-        // _world.GetEntity("LightSourceThree").AddComponent(new Material(
-        //     testShader, 
-        //     baseWhiteTexture, 
-        //     new Vector4(1.0f, 0.0f, 0.0f, 1.0f),
-        //     0.5f,
-        //     32f)
-        // );
-        // _world.GetEntity("LightSourceThree").AddComponent(new Transform
-        // (new Vector3(0.0f, 0.5f, 1.0f),
-        //     Vector3.Zero,
-        //     Vector3.One));
-        // _world.GetEntity("LightSourceThree").AddComponent(new MeshRenderer(cubeMesh));
-        // _world.GetEntity("LightSourceThree").AddComponent(new DirectionalLight(
-        //     new Vector3(1.0f, 0.0f, 0.5f),
-        //     new Vector3(0.1f),
-        //     new Vector3(0.5f),
-        //     new Vector3(0.2f)));
-        //
-        //Point light
-        _world.CreateEntity("LightSourceFour"); 
-        _world.GetEntity("LightSourceFour").AddComponent(new Material(
-            testShader, 
-            baseWhiteTexture, 
-            new Vector4(0.0f, 1.0f, 0.0f, 1.0f),
-            0.5f,
-            32f)
-        );
-        _world.GetEntity("LightSourceFour").AddComponent(new Transform
-        (new Vector3(0.0f, 15.0f, 0.0f),
-            Vector3.Zero,
-            Vector3.One));
-        _world.GetEntity("LightSourceFour").AddComponent(new MeshRenderer(cubeMesh));
-        _world.GetEntity("LightSourceFour").AddComponent(new PointLight(
-            new Vector3(0.0f, 1.0f, 0.0f),
-            new Vector3(0.2f),
-            new Vector3(0.9f),
-            new Vector3(0.5f), 
-            1.0f, 
-            0.045f, 
-            0.0075f
-            ));
-
         
         //TODO: NEED TO RECHECK THIS
         //Now creates a parent to child relationship in the engine
         //this means that if the parent transforms is affected the childs transform is affected too
-        _world.GetEntity("Cube").SetChild(_world.GetEntity("Cube"));
-        _world.GetEntity("Cube").SetChild(_world.GetEntity("LightSource"));
+        // _world.GetEntity("Cube").SetChild(_world.GetEntity("Cube"));
+        // _world.GetEntity("Cube").SetChild(_world.GetEntity("LightSource"));
         
         //load the ecs and get it ready
         _world.PopulateSystems();
         _world.LoadSystems();
-        GL.ClearColor(0.0f, 0.0f, 0.0f, 1f);
+        GL.ClearColor(0.5f, 0.5f, 0.5f, 1f); 
     }
 
     protected override void OnRenderFrame(FrameEventArgs e)
     {
         GL.Enable(EnableCap.DepthTest);
+        GL.Enable(EnableCap.CullFace);
+        GL.CullFace(CullFaceMode.Back);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         
         _world.UseSystems();

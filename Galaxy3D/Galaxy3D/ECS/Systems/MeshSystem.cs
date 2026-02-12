@@ -12,11 +12,8 @@ public class MeshSystem : ISystem
     private int _currentSystemAmount;
     int _maxEntities = 100;
     private DebugCamera _renderCamera;
-    
     //Lights
     private List<Entity> _lights = new List<Entity>(); //TODO CHANGE: THIS TO A LIST OF LIGHTS COMPONENTS
-    private int _amountOfDirLights;
-    private int _amountOfPointLights;
     
 
     public MeshSystem(int MAX_ENTITIES)
@@ -36,15 +33,9 @@ public class MeshSystem : ISystem
             {
                 Console.WriteLine(_renderEntities[i].entityName + " Light Added");
                 _lights.Add(_renderEntities[i]);
-                _amountOfDirLights++;
+                Console.WriteLine("Number of Lights in system: " + _lights.Count);
             }
             
-            if (_renderEntities[i].HasComponent<PointLight>())
-            {
-                Console.WriteLine(_renderEntities[i].entityName + " Light Added");
-                _lights.Add(_renderEntities[i]);
-                _amountOfPointLights++;
-            }
             
             if (!_renderEntities[i].HasComponent<MeshRenderer>()) continue;
             Material entityMat = _renderEntities[i].GetComponent<Material>();
@@ -125,6 +116,7 @@ public class MeshSystem : ISystem
             if (entityMat.texture is not null)
             {
                 entityMat.texture.Use(TextureUnit.Texture0);  
+                entityMat.shader.SetInt("mat.texture0", 0);
             }
 
             entityMat.shader.Use();
@@ -136,51 +128,23 @@ public class MeshSystem : ISystem
             
             //Material Struct
             entityMat.shader.SetVec3("mat.ambient", entityMat.materialColor.Xyz);
-            entityMat.shader.SetVec3("mat.ambient", entityMat.materialColor.Xyz);
             entityMat.shader.SetVec3("mat.diffuse", entityMat.materialColor.Xyz);
             entityMat.shader.SetVec3("mat.specular", entityMat.specularStrenght);
             entityMat.shader.SetFloat("mat.shine", entityMat.shine);
             
-            entityMat.shader.SetInt("amountDirLights", _amountOfDirLights);
-            entityMat.shader.SetInt("amountPointLights", _amountOfPointLights);
-            
-            Console.WriteLine("Amount of lights is: " + _lights.Count);
-            Console.WriteLine("Current Dir amount: " + _amountOfDirLights);
-            Console.WriteLine("Current Point amount: " + _amountOfPointLights);
-            
-            //TODO: CURRENT BUG NEED TO FIX INDEXING WITH THE LIGHT ARRAYS
             //Light Struct
             for (int l = 0; l < _lights.Count; l++)
             {
+                DirectionalLight systemLight = _lights[l].GetComponent<DirectionalLight>();
                 Transform lightTransform = _lights[l].GetComponent<Transform>();
                 
-                if(_lights[l].HasComponent<PointLight>())
-                {
-                    Console.WriteLine("Light " + _lights[l].entityName + " Light");
-                    PointLight systemLight = _lights[l].GetComponent<PointLight>();
-                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].color", systemLight.lightColor);
-                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].position", lightTransform.position);
-                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].ambient", systemLight.ambient);
-                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].diffuse", systemLight.diffuse);
-                    entityMat.shader.SetVec3($"pointLights[{indexPoint}].specular", systemLight.specular);
-                    entityMat.shader.SetFloat($"pointLights[{indexPoint}].constant", systemLight.constant);
-                    entityMat.shader.SetFloat($"pointLights[{indexPoint}].linear", systemLight.linear);
-                    entityMat.shader.SetFloat($"pointLights[{indexPoint}].quadratic", systemLight.quadratic);
-                    indexPoint++;
-                }
-                else
-                {
-                    DirectionalLight systemLight = _lights[l].GetComponent<DirectionalLight>();
-                                    
-                    entityMat.shader.SetVec3($"dirLights[{indexDir}].color", systemLight.lightColor);
-                    entityMat.shader.SetVec3($"dirLights[{indexDir}].dir", lightTransform.position);
-                    entityMat.shader.SetVec3($"dirLights[{indexDir}].ambient", systemLight.ambient);
-                    entityMat.shader.SetVec3($"dirLights[{indexDir}].diffuse", systemLight.diffuse);
-                    entityMat.shader.SetVec3($"dirLights[{indexDir}].specular", systemLight.specular);
-
-                    indexDir++;
-                }
+                entityMat.shader.SetVec3($"dirLight[{l}].color", systemLight.lightColor);
+                entityMat.shader.SetVec3($"dirLight[{l}].dir", lightTransform.position);
+                entityMat.shader.SetVec3($"dirLight[{l}].ambient", systemLight.ambient);
+                entityMat.shader.SetVec3($"dirLight[{l}].diffuse", systemLight.diffuse);
+                entityMat.shader.SetVec3($"dirLight[{l}].specular", systemLight.specular);
             }
+            
 
             GL.DrawElements(PrimitiveType.Triangles, entityMesh.indices.Length,
                 DrawElementsType.UnsignedInt, 0);

@@ -40,6 +40,7 @@ public class Model
         
         world.CreateEntity(modelName);
         _modelMainEntity = world.GetEntity(modelName);
+        _modelMainEntity.AddComponent(new Transform());
         
         TextureAtlas atlas = new TextureAtlas(
             "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Textures/container2.png",
@@ -108,6 +109,7 @@ public class Model
             }
 
             world.CreateEntity(mesh.Name);
+            Console.WriteLine(mesh.Name);
             _modelMainEntity.children.Add(mesh.Name, world.GetEntity(mesh.Name));
             Mesh engineModelmesh = new Mesh(vertices, textureUVs, normals ,indices.ToArray());
             world.GetEntity(mesh.Name).AddComponent(new MeshRenderer(engineModelmesh));
@@ -122,8 +124,8 @@ public class Model
             
             //Updates the transform off the object
             Transform objectTransform = world.GetEntity(mesh.Name).GetComponent<Transform>();
-            objectTransform.position = new Vector3(0f, 0f, 0f);
-            objectTransform.scale = new Vector3(0.08f, 0.08f, 0.08f);
+            objectTransform.position = new Vector3(0f, -5f, 0f);
+            objectTransform.scale = new Vector3(0.01f, 0.01f, 0.01f);
             
             world.GetEntity(mesh.Name).SetComponent(objectTransform);
         }

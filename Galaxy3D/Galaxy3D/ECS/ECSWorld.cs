@@ -86,14 +86,9 @@ public class ECSWorld
             {
                 if (_entities[i] is not null)
                 {
-                    if (_entities[i].HasComponent<DirectionalLight>())
+                    if (_entities[i].HasComponent<DirectionalLight>() ||_entities[i].HasComponent<MeshRenderer>() )
                     {
                         Console.WriteLine("A light has been added to system: " + _entities[i].entityName);
-                        _meshSystem.AddEntityToSystem(_entities[i]);
-                    }
-                    
-                    if (_entities[i].HasComponent<MeshRenderer>())
-                    {
                         _meshSystem.AddEntityToSystem(_entities[i]);
                     }
                 }
