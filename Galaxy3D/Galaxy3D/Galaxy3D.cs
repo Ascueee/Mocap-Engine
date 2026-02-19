@@ -6,16 +6,21 @@ using OpenTK.Windowing.Desktop;
 using Galaxy3D.Assets;
 using Galaxy3D.ECS;
 using Galaxy3D.ECS.Components;
+using Galaxy3D.SceneGraph;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Galaxy3D;
 /// <summary>
 /// GENERAL NOTES TO SELF:
-///     COMPONENTS ARE STRUCTS MAKE SURE TO RESET THEIR COMPONENTS USING THE SETCOMPONENT METHOD
+/// THis is an ecs engine where entities are the backbone of the engine
+/// Entities function in a ECS world with componenets
+/// The engine is also broken up into Scenes where a text file is used to layout the scenes(entities, assets, and shii being used)
+///     A scene is where all the entities will be stored that will be used for that current scene and logic
+///     
 /// </summary>
 public class Galaxy3D : GameWindow
 {
-    static ECSWorld _world = new ECSWorld();
+    static Scene _testScene = new Scene("TestScene");
     private double _gameTime;
     
     //Fill it with cube mesh data later
@@ -68,7 +73,6 @@ public class Galaxy3D : GameWindow
             16, 17, 18, 18, 19, 16, // Bottom
             20, 23, 22, 22, 21, 20  // Top
         });
-
     
     Mesh triangleMesh = new Mesh(new float[]
     {
@@ -112,10 +116,10 @@ public class Galaxy3D : GameWindow
         new Vector2(1,1)
     );
     
-    private Model modelTest = new Model(
-        "TestModel",
-        "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/erato.obj",
-        _world);
+    // private Model modelTest = new Model(
+    //     "TestModel",
+    //     "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Models/sponza.obj",
+    //     _testScene.SceneWorld);
         
     public Galaxy3D(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings()
     {
@@ -128,52 +132,65 @@ public class Galaxy3D : GameWindow
     protected override void OnLoad()
     {
         
+        //IN THE FUTURE ENTITIES WILL BE MADE IN JSON FILES IN A SCENE JSON FILE
+        //
+        
         //Creates a simple cube that will render
-        _world.CreateEntity("Cube"); 
+        _testScene.SceneWorld.CreateEntity("Cube"); 
         //through code you can easily Add components there are multiple component types(each struct and system class has a description
-        _world.GetEntity("Cube").AddComponent(new Material(
+        _testScene.SceneWorld.GetEntity("Cube").AddComponent(new Material(
             lightShader, 
             atlas, 
             new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
             0.3f,
             23f)
         );
-        _world.GetEntity("Cube").AddComponent(new Transform
-        (new Vector3(-3.0f, -2.0f, 0.0f),
+        _testScene.SceneWorld.GetEntity("Cube").AddComponent(new Transform
+        (new Vector3(-3.0f, -10.0f, 0.0f),
             Vector3.Zero,
             new Vector3(4f)));
-        _world.GetEntity("Cube").AddComponent(new MeshRenderer(cubeMesh));
+        _testScene.SceneWorld.GetEntity("Cube").AddComponent(new MeshRenderer(cubeMesh));
+        
+        _testScene.SceneWorld.CreateEntity("Cube Two"); 
+        //through code you can easily Add components there are multiple component types(each struct and system class has a description
+        _testScene.SceneWorld.GetEntity("Cube Two").AddComponent(new Material(
+            lightShader, 
+            atlas, 
+            new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+            0.3f,
+            23f)
+        );
+        _testScene.SceneWorld.GetEntity("Cube Two").AddComponent(new Transform
+        (new Vector3(0.0f, -10.0f, 0.0f),
+            Vector3.Zero,
+            new Vector3(1f)));
+        _testScene.SceneWorld.GetEntity("Cube Two").AddComponent(new MeshRenderer(cubeMesh));
         
         //Light One
-        _world.CreateEntity("Directional Light"); 
-        _world.GetEntity("Directional Light").AddComponent(new Material(
+        _testScene.SceneWorld.CreateEntity("Directional Light"); 
+        _testScene.SceneWorld.GetEntity("Directional Light").AddComponent(new Material(
             testShader, 
             baseWhiteTexture, 
             new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
             0.2f,
             32f)
         );
-        _world.GetEntity("Directional Light").AddComponent(new Transform
-        (new Vector3(-0.2f, -1.0f, -0.3f),
+        _testScene.SceneWorld.GetEntity("Directional Light").AddComponent(new Transform
+        (new Vector3(-0.0f, -10.0f, -10.0f),
             Vector3.Zero,
             Vector3.One));
-        _world.GetEntity("Directional Light").AddComponent(new MeshRenderer(cubeMesh));
-        _world.GetEntity("Directional Light").AddComponent(new DirectionalLight(
+        _testScene.SceneWorld.GetEntity("Directional Light").AddComponent(new MeshRenderer(cubeMesh));
+        _testScene.SceneWorld.GetEntity("Directional Light").AddComponent(new DirectionalLight(
             new Vector3(0.5f, 0.5f, 0.5f),
-            new Vector3(1.0f),
-            new Vector3(1.0f),
-            new Vector3(1.0f)));
-        
+            new Vector3(1f),
+            new Vector3(1f),
+            new Vector3(1f)));
         
         //TODO: NEED TO RECHECK THIS
         //Now creates a parent to child relationship in the engine
         //this means that if the parent transforms is affected the childs transform is affected too
-        // _world.GetEntity("Cube").SetChild(_world.GetEntity("Cube"));
-        // _world.GetEntity("Cube").SetChild(_world.GetEntity("LightSource"));
-        
-        //load the ecs and get it ready
-        _world.PopulateSystems();
-        _world.LoadSystems();
+        // _testScene.SceneWorld.GetEntity("Cube").SetChild(_testScene.SceneWorld.GetEntity("Cube Two"));
+        _testScene.LoadScene();
         GL.ClearColor(0.5f, 0.5f, 0.5f, 1f); 
     }
 
@@ -184,7 +201,7 @@ public class Galaxy3D : GameWindow
         GL.CullFace(CullFaceMode.Back);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
         
-        _world.UseSystems();
+        _testScene.RunScene();
         
         SwapBuffers();
     }
@@ -199,7 +216,12 @@ public class Galaxy3D : GameWindow
         _gameTime = e.Time;
         var input = KeyboardState;
         var mouseState = MouseState;
-        _world.TestCameraMove(e, input, mouseState);
+        _testScene.SceneWorld.TestCameraMove(e, input, mouseState);
+        
+        Transform transfrom = _testScene.SceneWorld.GetEntity("Cube").GetComponent<Transform>();
+        // transfrom.position += new Vector3(3, 0, 0) * (float)_gameTime;
+        transfrom.rotation += new Vector3(0.5f, 0, 0) * (float)_gameTime;
+        _testScene.SceneWorld.GetEntity("Cube").SetComponent(transfrom);
         
         
         if (input.IsKeyDown(Keys.Escape))

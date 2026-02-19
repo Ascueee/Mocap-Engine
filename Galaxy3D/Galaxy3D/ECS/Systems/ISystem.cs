@@ -12,6 +12,11 @@ public interface ISystem
     {
     }
 
+    public void UseSystem()
+    {
+        
+    }
+
     public void AddEntityToSystemw(Entity e)
     {
     }

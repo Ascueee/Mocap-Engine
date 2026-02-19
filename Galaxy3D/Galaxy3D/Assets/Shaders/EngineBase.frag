@@ -13,7 +13,7 @@ struct DirLight {
     vec3 specular;
 };
 
-#define MAX_DIRLIGHTS 1
+#define MAX_DIRLIGHTS 1 //MAYBE add functionality for more dir lights
 
 out vec4 fragColor;
 in vec2 texCoord;

@@ -38,6 +38,7 @@ public class Model
                                                        | PostProcessSteps.JoinIdenticalVertices
                                                        | PostProcessSteps.CalculateTangentSpace);
         
+        //Creates the base entity for the model
         world.CreateEntity(modelName);
         _modelMainEntity = world.GetEntity(modelName);
         _modelMainEntity.AddComponent(new Transform());
@@ -51,7 +52,7 @@ public class Model
             "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/EngineBase.vert",
             "/Users/hayyan/Desktop/Repos/Mocap-Engine/Galaxy3D/Galaxy3D/Assets/Shaders/EngineBase.frag");
         
-        //Itterates through the model mesh can creates entities
+        //Itterates through the model mesh and creates entities
         foreach (Assimp.Mesh mesh in assimpScene.Meshes)
         {
             float[] vertices = new float[mesh.Vertices.Count * 3];
@@ -110,7 +111,6 @@ public class Model
 
             world.CreateEntity(mesh.Name);
             Console.WriteLine(mesh.Name);
-            _modelMainEntity.children.Add(mesh.Name, world.GetEntity(mesh.Name));
             Mesh engineModelmesh = new Mesh(vertices, textureUVs, normals ,indices.ToArray());
             world.GetEntity(mesh.Name).AddComponent(new MeshRenderer(engineModelmesh));
             world.GetEntity(mesh.Name).AddComponent(new Material(

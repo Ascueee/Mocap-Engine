@@ -106,11 +106,10 @@ public class MeshSystem : ISystem
             MeshRenderer entityMesh = _renderEntities[i].GetComponent<MeshRenderer>();
             Transform entityTransform = _renderEntities[i].GetComponent<Transform>();
             
-            Matrix4 model = UpdateModelMatrix(entityTransform.position, entityTransform.rotation, entityTransform.scale);
+            Matrix4 model = entityTransform.modelMatrix;
                 
-            //NOTE TO SELF: get this from the camera componenent which gets updated in the camera system
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(90f),
-                800f / 600f, 0.1f, 100.0f);
+            //NOTE TO SELF: get projection matrix from the camera componenent which gets updated in the camera system
+  
             
             renderCamera.UpdateLookVectors();
             if (entityMat.texture is not null)

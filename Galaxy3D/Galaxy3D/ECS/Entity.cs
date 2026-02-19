@@ -5,7 +5,7 @@ namespace Galaxy3D.ECS;
 public class Entity
 {
     //hard coded amount of components per entity
-    int _maxEntities = 100;
+    int _maxComponents = 100;
     IdGenerator componentIdGenerator = new IdGenerator(100);
     private int entityComponentAmount = 0;
     
@@ -15,7 +15,7 @@ public class Entity
     
     //this is the child parent hierachy for the entities
     Entity _parent;
-    Dictionary<string, Entity> _children = new Dictionary<string, Entity>();
+    List<Entity> _children = new List<Entity>();
     
     public Entity(int id, string entityName)
     {
@@ -25,11 +25,11 @@ public class Entity
 
     public void AddComponent(IComponent component)
     {
-        if (entityComponentAmount == _maxEntities)
+        if (entityComponentAmount == _maxComponents)
         {
-            _maxEntities += 100;
-            componentIdGenerator.maxAmountOfIds = _maxEntities;
-            var updatedArray = new IComponent[_maxEntities];
+            _maxComponents += 100;
+            componentIdGenerator.maxAmountOfIds = _maxComponents;
+            var updatedArray = new IComponent[_maxComponents];
             _components.CopyTo(updatedArray, 0);
             _components = updatedArray;
         }
@@ -86,12 +86,6 @@ public class Entity
         return false;
     }
 
-    public void SetChild(Entity child)
-    {
-        child.parent = this;
-        children.Add(child._entityName, child);
-    }
-
     public void PrintComponents()
     {
         Console.WriteLine($"Components in {entityName}:");
@@ -102,10 +96,16 @@ public class Entity
             Console.WriteLine($"\tComponent | {_components[i].GetType().Name}");
         }
     }
+
+    public void SetChild(Entity e)
+    {
+        _children.Add(e);
+        e.parent = this;
+    }
     
     public int id => _id;
     public string entityName => _entityName;
     public Entity parent { get => _parent; set => _parent = value; }
-    public Dictionary<string, Entity> children => _children;
+    public List<Entity> children { get => _children; set => _children = value; }
 
 }

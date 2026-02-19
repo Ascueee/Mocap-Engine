@@ -13,19 +13,19 @@ namespace Galaxy3D.ECS;
 public class ECSWorld
 {
     //The max amount of entities the system can holdw
-    int _maxEntities = 800;
+    static int _maxEntities = 800;
     IdGenerator _entityIdGenerator = new IdGenerator(800);
     
     //Need to make it so that the arrays created doubles when its full
     Entity[] _entities = new Entity[800];
-    MeshSystem _meshSystem = new MeshSystem(800);
+    MeshSystem _meshSystem = new MeshSystem(_maxEntities);
+    TransformSystem _transformSystem = new TransformSystem(_maxEntities);
     Dictionary<string, int> _entityLookup = new Dictionary<string, int>();
     private DebugCamera testCam;
     
     //Used to keep track of the amount of entities currently in the system
     //Used to stop for loops from parsing through the entire list
     private int _currentEntityAmount = 0;
-    
     #region Entity Methods
         //Creates an entity in the system as well as gives it an id
         public void CreateEntity(string entityName)
@@ -86,11 +86,19 @@ public class ECSWorld
             {
                 if (_entities[i] is not null)
                 {
+                    if (_entities[i].HasComponent<Transform>())
+                    {
+                        Console.WriteLine("A entity has been added to transform system: " + _entities[i].entityName);
+                        _transformSystem.AddEntityToSystem(_entities[i]);
+                    }
+                    
                     if (_entities[i].HasComponent<DirectionalLight>() ||_entities[i].HasComponent<MeshRenderer>() )
                     {
-                        Console.WriteLine("A light has been added to system: " + _entities[i].entityName);
+                        Console.WriteLine("A entity has been added to mesh system: " + _entities[i].entityName);
                         _meshSystem.AddEntityToSystem(_entities[i]);
                     }
+
+ 
                 }
             }
         }
@@ -109,7 +117,7 @@ public class ECSWorld
             //camera system
             //render system should be updates last
             _meshSystem.UpdateSystem();
-            
+            _transformSystem.UseSystem();
         }
         
         //NOTE TO SELF DELETE THESE LATER:
