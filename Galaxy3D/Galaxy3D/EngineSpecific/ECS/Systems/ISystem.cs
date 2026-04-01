@@ -2,6 +2,8 @@ namespace Galaxy3D.ECS.Systems;
 
 public interface ISystem
 {
+
+    
     //Load all system logic
     public void LoadSystem()
     {
@@ -12,12 +14,8 @@ public interface ISystem
     {
     }
 
-    public void UseSystem()
+    public void AddEntityToSystem(Entity e)
     {
         
-    }
-
-    public void AddEntityToSystemw(Entity e)
-    {
     }
 }

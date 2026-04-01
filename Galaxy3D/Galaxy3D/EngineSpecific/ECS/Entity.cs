@@ -16,6 +16,7 @@ public class Entity
     //this is the child parent hierachy for the entities
     Entity _parent;
     List<Entity> _children = new List<Entity>();
+    private bool _alreadySorted = false;
     
     public Entity(int id, string entityName)
     {
@@ -86,26 +87,27 @@ public class Entity
         return false;
     }
 
-    public void PrintComponents()
-    {
-        Console.WriteLine($"Components in {entityName}:");
-        for (int i = 0; i < _components.Length; i++)
-        {
-            if (_components[i] is null)
-                break;
-            Console.WriteLine($"\tComponent | {_components[i].GetType().Name}");
-        }
-    }
-
     public void SetChild(Entity e)
     {
         _children.Add(e);
         e.parent = this;
     }
+
+    public Entity GetChild(string entityName)
+    {
+        foreach (var e in children)
+        {
+            if(e.entityName == entityName)
+                return e;
+        }
+        
+        return null;
+    }
     
     public int id => _id;
-    public string entityName => _entityName;
+    public string entityName {get => _entityName; set => _entityName = value; }
     public Entity parent { get => _parent; set => _parent = value; }
     public List<Entity> children { get => _children; set => _children = value; }
+    public bool alreadySorted { get => _alreadySorted; set => _alreadySorted = value; }
 
 }

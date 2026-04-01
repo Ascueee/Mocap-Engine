@@ -169,12 +169,47 @@ public class Shader
         GL.Uniform4(location, val.X, val.Y, val.Z, val.W);
     }
     
-    
-    
-    
     public void SetMat4(string name, Matrix4 mat)
     {
         int location = GL.GetUniformLocation(handle, name);
         GL.UniformMatrix4(location, false, ref mat);
+    }
+    
+    public void SetMat4Array(string name, Matrix4[] mats)
+    {
+        int location = GL.GetUniformLocation(handle, name);
+        if (location == -1)
+        {
+            Console.WriteLine($"Warning: Uniform '{name}' not found!");
+            return;
+        }
+
+        // Flatten the array into a contiguous float buffer
+        float[] flat = new float[mats.Length * 16];
+        for (int i = 0; i < mats.Length; i++)
+        {
+            flat[i * 16 + 0] = mats[i].M11;
+            flat[i * 16 + 1] = mats[i].M12;
+            flat[i * 16 + 2] = mats[i].M13;
+            flat[i * 16 + 3] = mats[i].M14;
+
+            flat[i * 16 + 4] = mats[i].M21;
+            flat[i * 16 + 5] = mats[i].M22;
+            flat[i * 16 + 6] = mats[i].M23;
+            flat[i * 16 + 7] = mats[i].M24;
+
+            flat[i * 16 + 8] = mats[i].M31;
+            flat[i * 16 + 9] = mats[i].M32;
+            flat[i * 16 + 10] = mats[i].M33;
+            flat[i * 16 + 11] = mats[i].M34;
+
+            flat[i * 16 + 12] = mats[i].M41;
+            flat[i * 16 + 13] = mats[i].M42;
+            flat[i * 16 + 14] = mats[i].M43;
+            flat[i * 16 + 15] = mats[i].M44;
+        }
+
+        // Upload the entire array to the shader
+        GL.UniformMatrix4(location, mats.Length, false, flat);
     }
 }

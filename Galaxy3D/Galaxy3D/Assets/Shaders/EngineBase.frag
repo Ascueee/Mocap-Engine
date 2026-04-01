@@ -1,6 +1,7 @@
 #version 330 core
 struct Material {
     sampler2D texture0;
+    vec3 color;
     vec3 specular;
     float shine;
 };
@@ -47,7 +48,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), mat.shine);
     
-    vec3 texColor = vec3(texture(mat.texture0, texCoord));
+    vec3 texColor = vec3(texture(mat.texture0, texCoord)) * mat.color;
     
     vec3 ambient  = light.ambient  * texColor;
     vec3 diffuse  = light.diffuse  * diff * texColor;
